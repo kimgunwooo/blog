@@ -1,6 +1,7 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
+import GlobalSidebar from '../components/GlobalSidebar.astro';
 import Header from '../components/Header.astro';
 import { PROFILE_LINKS, SITE_DESCRIPTION } from '../consts';
 ---
@@ -12,46 +13,49 @@ import { PROFILE_LINKS, SITE_DESCRIPTION } from '../consts';
 	</head>
 	<body>
 		<Header />
-		<main class="about">
-			<section class="intro">
-				<p class="eyebrow">About</p>
-				<h1>김건우</h1>
-				<p>
-					백엔드와 DBA 업무를 하면서 배포, 컨테이너, 자동화, 관측성 쪽 문제를 자주 마주쳤습니다.
-					이 블로그에는 그때마다 애매하게 넘어갔던 개념을 다시 파고든 기록과, 홈 랩에서 직접
-					실험해본 내용을 Docker, Network, Kubernetes, Cloud 같은 흐름으로 남깁니다.
-				</p>
-			</section>
+		<div class="site-layout">
+			<GlobalSidebar />
+			<main class="about">
+				<section class="intro">
+					<p class="eyebrow">About</p>
+					<h1>김건우</h1>
+					<p>
+						백엔드와 DBA 업무를 하면서 배포, 컨테이너, 자동화, 관측성 쪽 문제를 자주 마주쳤습니다.
+						이 블로그에는 그때마다 애매하게 넘어갔던 개념을 다시 파고든 기록과, 홈 랩에서 직접
+						실험해본 내용을 Docker, Network, Kubernetes, Cloud 같은 흐름으로 남깁니다.
+					</p>
+				</section>
 
-			<section class="about-grid">
-				<article>
-					<h2>Work Style</h2>
-					<p>
-						처음부터 정답을 안다고 쓰기보다, 무엇을 몰랐고 어디서 헷갈렸는지부터 적습니다. 이해한
-						내용은 명령어, 그림, 작은 실험으로 다시 확인합니다.
-					</p>
-				</article>
-				<article>
-					<h2>Current Lab</h2>
-					<p>
-						홈 Kubernetes에 개인 서비스를 올리고, GitOps 배포, 관측성, 알림, 장애 재현을 작은
-						단위로 반복합니다.
-					</p>
-				</article>
-				<article>
-					<h2>Channels</h2>
-					<p>
-						Velog에는 완성도 있는 요약을 남기고, 이 사이트에는 더 긴 학습 노트와 실험 과정을
-						남깁니다.
-					</p>
-					<div class="links">
-						<a href={PROFILE_LINKS.github} target="_blank">GitHub</a>
-						<a href={PROFILE_LINKS.velog} target="_blank">Velog</a>
-						<a href={PROFILE_LINKS.email}>Email</a>
-					</div>
-				</article>
-			</section>
-		</main>
+				<section class="about-grid">
+					<article>
+						<h2>Work Style</h2>
+						<p>
+							처음부터 정답을 안다고 쓰기보다, 무엇을 몰랐고 어디서 헷갈렸는지부터 적습니다.
+							이해한 내용은 명령어, 그림, 작은 실험으로 다시 확인합니다.
+						</p>
+					</article>
+					<article>
+						<h2>Current Lab</h2>
+						<p>
+							홈 Kubernetes에 개인 서비스를 올리고, GitOps 배포, 관측성, 알림, 장애 재현을 작은
+							단위로 반복합니다.
+						</p>
+					</article>
+					<article>
+						<h2>Channels</h2>
+						<p>
+							Velog에는 완성도 있는 요약을 남기고, 이 사이트에는 더 긴 학습 노트와 실험 과정을
+							남깁니다.
+						</p>
+						<div class="links">
+							<a href={PROFILE_LINKS.github} target="_blank">GitHub</a>
+							<a href={PROFILE_LINKS.velog} target="_blank">Velog</a>
+							<a href={PROFILE_LINKS.email}>Email</a>
+						</div>
+					</article>
+				</section>
+			</main>
+		</div>
 		<Footer />
 	</body>
 </html>

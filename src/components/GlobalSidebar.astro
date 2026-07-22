@@ -1,0 +1,215 @@
+---
+import { getCollection } from 'astro:content';
+import { BLOG_CATEGORIES, PROFILE_LINKS } from '../consts';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const recentPosts = posts.slice(0, 4);
+const counts = new Map<string, number>();
+for (const post of posts) {
+	counts.set(post.data.category, (counts.get(post.data.category) ?? 0) + 1);
+}
+---
+
+<aside class="global-sidebar" aria-label="블로그 사이드바">
+	<section class="profile">
+		<img class="avatar" src="/profile-assets/gunwoo-profile.jpg" alt="김건우 프로필 사진" />
+		<p class="overline">Platform / DevOps Notes</p>
+		<h2>김건우</h2>
+		<p>Docker, Kubernetes, Cloud 운영을 직접 실험하고 기록합니다.</p>
+		<div class="icon-links" aria-label="프로필 링크">
+			<a href={PROFILE_LINKS.github} target="_blank" aria-label="GitHub">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path
+						d="M12 2C6.48 2 2 6.58 2 12.25c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.49v-1.9c-2.78.62-3.37-1.2-3.37-1.2-.45-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.58 2.36 1.12 2.93.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.05 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.3 9.3 0 0 1 12 6.96c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.92-2.34 4.78-4.57 5.04.36.32.68.95.68 1.92v2.84c0 .27.18.6.69.49A10.2 10.2 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"></path>
+				</svg>
+			</a>
+			<a href={PROFILE_LINKS.velog} target="_blank" aria-label="Velog">
+				<span aria-hidden="true">v</span>
+			</a>
+			<a href={PROFILE_LINKS.email} aria-label="Email">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path
+						d="M4.75 5.5h14.5c.97 0 1.75.78 1.75 1.75v9.5c0 .97-.78 1.75-1.75 1.75H4.75A1.75 1.75 0 0 1 3 16.75v-9.5c0-.97.78-1.75 1.75-1.75Zm0 1.5a.25.25 0 0 0-.25.25v.54l7.5 4.54 7.5-4.54v-.54a.25.25 0 0 0-.25-.25H4.75Zm14.75 2.54-7.11 4.31a.75.75 0 0 1-.78 0L4.5 9.54v7.21c0 .14.11.25.25.25h14.5c.14 0 .25-.11.25-.25V9.54Z"></path>
+				</svg>
+			</a>
+		</div>
+	</section>
+
+	<section>
+		<p class="section-title">Topics</p>
+		<nav class="topic-list" aria-label="토픽">
+			{
+				BLOG_CATEGORIES.map((category) => (
+					<a href={`/categories/${category.slug}/`}>
+						<span>{category.label}</span>
+						<small>{counts.get(category.label) ?? 0}</small>
+					</a>
+				))
+			}
+		</nav>
+	</section>
+
+	<section class="recent">
+		<p class="section-title">Recent</p>
+		{
+			recentPosts.map((post) => (
+				<a href={`/blog/${post.id}/`}>
+					<span>{post.data.category}</span>
+					<strong>{post.data.title}</strong>
+				</a>
+			))
+		}
+	</section>
+</aside>
+
+<style>
+	.global-sidebar {
+		position: sticky;
+		top: 88px;
+		align-self: start;
+		padding-top: 0.25rem;
+		color: rgb(var(--gray-dark));
+		font-size: 0.92rem;
+	}
+	.global-sidebar section {
+		padding: 1.15rem 0;
+		border-bottom: 1px solid rgb(var(--line));
+	}
+	.global-sidebar section:first-child {
+		padding-top: 0;
+	}
+	.avatar {
+		display: block;
+		width: min(100%, 190px);
+		aspect-ratio: 4 / 5;
+		margin-bottom: 1rem;
+		border-radius: 12px;
+		object-fit: cover;
+		object-position: 36% 48%;
+		border: 1px solid rgb(var(--line));
+		filter: saturate(0.92);
+	}
+	.overline,
+	.section-title {
+		margin: 0 0 0.75rem;
+		color: var(--accent);
+		font-size: 0.78rem;
+		font-weight: 800;
+		text-transform: uppercase;
+	}
+	.profile h2 {
+		margin: 0 0 0.45rem;
+		font-size: 1.05rem;
+		line-height: 1.35;
+	}
+	.profile p:not(.overline) {
+		margin: 0;
+		color: rgb(var(--muted));
+		line-height: 1.55;
+	}
+	.icon-links {
+		display: flex;
+		gap: 0.45rem;
+		margin-top: 1rem;
+	}
+	.icon-links a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		color: rgb(var(--gray-dark));
+		background: #fff;
+		border: 1px solid rgb(var(--line));
+		border-radius: 999px;
+		text-decoration: none;
+		transition:
+			border-color 160ms ease,
+			color 160ms ease,
+			transform 160ms ease;
+	}
+	.icon-links svg {
+		width: 17px;
+		height: 17px;
+		fill: currentColor;
+	}
+	.icon-links span {
+		font-size: 1.05rem;
+		font-weight: 800;
+		line-height: 1;
+		transform: translateY(-1px);
+	}
+	.icon-links a:hover {
+		color: var(--accent);
+		border-color: rgba(23, 74, 124, 0.35);
+		transform: translateY(-1px);
+	}
+	.topic-list {
+		display: grid;
+	}
+	.topic-list a {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		padding: 0.4rem 0;
+		color: inherit;
+		border-top: 1px solid rgba(var(--line), 0.65);
+		text-decoration: none;
+	}
+	.topic-list a:first-child {
+		border-top: 0;
+	}
+	.topic-list a:hover span {
+		color: var(--accent);
+	}
+	.topic-list small {
+		color: rgb(var(--muted));
+		font-size: 0.78rem;
+	}
+	.recent {
+		display: grid;
+		gap: 0.65rem;
+	}
+	.recent a {
+		display: grid;
+		gap: 0.15rem;
+		color: inherit;
+		text-decoration: none;
+	}
+	.recent span {
+		color: rgb(var(--muted));
+		font-size: 0.74rem;
+		font-weight: 800;
+		text-transform: uppercase;
+	}
+	.recent strong {
+		font-size: 0.88rem;
+		line-height: 1.45;
+	}
+	.recent a:hover strong {
+		color: var(--accent);
+	}
+	@media (max-width: 900px) {
+		.global-sidebar {
+			position: static;
+			display: grid;
+			grid-template-columns: 1fr;
+			padding: 0 0 1.25rem;
+			border-bottom: 1px solid rgb(var(--line));
+		}
+		.global-sidebar section {
+			padding: 0.95rem 0;
+		}
+		.avatar {
+			width: 132px;
+			aspect-ratio: 1 / 1;
+			border-radius: 50%;
+		}
+		.recent {
+			display: none;
+		}
+	}
+</style>

@@ -14,11 +14,20 @@ import HeaderLink from './HeaderLink.astro';
 			<HeaderLink href="/about">About</HeaderLink>
 		</div>
 		<div class="social-links">
-			<a href={PROFILE_LINKS.github} target="_blank">
-				<span>GitHub</span>
+			<a href={PROFILE_LINKS.github} target="_blank" aria-label="GitHub">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path
+						d="M12 2C6.48 2 2 6.58 2 12.25c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.49v-1.9c-2.78.62-3.37-1.2-3.37-1.2-.45-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.58 2.36 1.12 2.93.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.05 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.3 9.3 0 0 1 12 6.96c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.92-2.34 4.78-4.57 5.04.36.32.68.95.68 1.92v2.84c0 .27.18.6.69.49A10.2 10.2 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"></path>
+				</svg>
 			</a>
-			<a href={PROFILE_LINKS.velog} target="_blank">
-				<span>Velog</span>
+			<a href={PROFILE_LINKS.velog} target="_blank" aria-label="Velog">
+				<span aria-hidden="true">v</span>
+			</a>
+			<a href={PROFILE_LINKS.email} aria-label="Email">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path
+						d="M4.75 5.5h14.5c.97 0 1.75.78 1.75 1.75v9.5c0 .97-.78 1.75-1.75 1.75H4.75A1.75 1.75 0 0 1 3 16.75v-9.5c0-.97.78-1.75 1.75-1.75Zm0 1.5a.25.25 0 0 0-.25.25v.54l7.5 4.54 7.5-4.54v-.54a.25.25 0 0 0-.25-.25H4.75Zm14.75 2.54-7.11 4.31a.75.75 0 0 1-.78 0L4.5 9.54v7.21c0 .14.11.25.25.25h14.5c.14 0 .25-.11.25-.25V9.54Z"></path>
+				</svg>
 			</a>
 		</div>
 	</nav>
@@ -47,14 +56,14 @@ import HeaderLink from './HeaderLink.astro';
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		max-width: 1120px;
+		max-width: 1160px;
 		margin: 0 auto;
 		min-height: 64px;
 		gap: 1rem;
 	}
 	nav a {
 		padding: 0.75rem 0.5rem;
-		color: var(--black);
+		color: rgb(var(--black));
 		border-bottom: 2px solid transparent;
 		text-decoration: none;
 		font-size: 0.9rem;
@@ -68,12 +77,38 @@ import HeaderLink from './HeaderLink.astro';
 		align-items: center;
 		gap: 0.25rem;
 	}
-	.social-links,
-	.social-links a {
+	header nav .social-links,
+	header nav .social-links a {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		color: rgb(var(--muted));
+		color: rgb(var(--gray-dark));
+	}
+	header nav .social-links {
+		gap: 0.4rem;
+	}
+	header nav .social-links a {
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		border: 1px solid rgb(var(--line));
+		border-radius: 999px;
+		background: #fff;
+	}
+	header nav .social-links svg {
+		width: 17px;
+		height: 17px;
+		fill: currentColor;
+	}
+	header nav .social-links span {
+		font-size: 1.05rem;
+		font-weight: 800;
+		line-height: 1;
+		transform: translateY(-1px);
+	}
+	header nav .social-links a:hover {
+		color: var(--accent);
+		border-color: rgba(23, 74, 124, 0.35);
 	}
 	@media (max-width: 720px) {
 		header {
@@ -91,7 +126,7 @@ import HeaderLink from './HeaderLink.astro';
 			overflow-x: auto;
 			white-space: nowrap;
 		}
-		.social-links {
+		header nav .social-links {
 			display: none;
 		}
 	}

@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
+import GlobalSidebar from '../../components/GlobalSidebar.astro';
 import Header from '../../components/Header.astro';
 import { BLOG_CATEGORIES, SITE_DESCRIPTION } from '../../consts';
 
@@ -26,33 +27,36 @@ const posts = (await getCollection('blog'))
 	</head>
 	<body>
 		<Header />
-		<main>
-			<section class="page-title">
-				<p class="eyebrow">Category</p>
-				<h1>{category.label}</h1>
-				<p>{category.description}</p>
-			</section>
-			<section class="posts">
-				{
-					posts.length === 0 ? (
-						<div class="empty">
-							<h2>아직 작성 중입니다</h2>
-							<p>이 카테고리는 앞으로 공부하면서 글을 채워갈 예정입니다.</p>
-						</div>
-					) : (
-						posts.map((post) => (
-							<a class="post-row" href={`/blog/${post.id}/`}>
-								<p>
-									<FormattedDate date={post.data.pubDate} />
-								</p>
-								<h2>{post.data.title}</h2>
-								<span>{post.data.description}</span>
-							</a>
-						))
-					)
-				}
-			</section>
-		</main>
+		<div class="site-layout">
+			<GlobalSidebar />
+			<main>
+				<section class="page-title">
+					<p class="eyebrow">Category</p>
+					<h1>{category.label}</h1>
+					<p>{category.description}</p>
+				</section>
+				<section class="posts">
+					{
+						posts.length === 0 ? (
+							<div class="empty">
+								<h2>아직 작성 중입니다</h2>
+								<p>이 카테고리는 앞으로 공부하면서 글을 채워갈 예정입니다.</p>
+							</div>
+						) : (
+							posts.map((post) => (
+								<a class="post-row" href={`/blog/${post.id}/`}>
+									<p>
+										<FormattedDate date={post.data.pubDate} />
+									</p>
+									<h2>{post.data.title}</h2>
+									<span>{post.data.description}</span>
+								</a>
+							))
+						)
+					}
+				</section>
+			</main>
+		</div>
 		<Footer />
 	</body>
 </html>

@@ -1,6 +1,7 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
+import GlobalSidebar from '../components/GlobalSidebar.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION } from '../consts';
 
@@ -39,34 +40,37 @@ const roadmap = [
 	</head>
 	<body>
 		<Header />
-		<main>
-			<section class="page-title">
-				<p class="eyebrow">Ops Log</p>
-				<h1>이 블로그를 운영해보는 기록</h1>
-				<p>
-					처음에는 정적 사이트로 단순하게 시작합니다. 이후 배포 자동화, 관측, 알림, 장애 대응을
-					조금씩 붙이며 블로그 자체를 작은 운영 대상으로 다뤄봅니다.
-				</p>
-			</section>
-			<section class="timeline">
-				{
-					roadmap.map((item) => (
-						<article>
-							<div class="phase">{item.phase}</div>
-							<div>
-								<p class="status">{item.status}</p>
-								<h2>{item.title}</h2>
-								<ul>
-									{item.items.map((entry) => (
-										<li>{entry}</li>
-									))}
-								</ul>
-							</div>
-						</article>
-					))
-				}
-			</section>
-		</main>
+		<div class="site-layout">
+			<GlobalSidebar />
+			<main>
+				<section class="page-title">
+					<p class="eyebrow">Ops Log</p>
+					<h1>이 블로그를 운영해보는 기록</h1>
+					<p>
+						처음에는 정적 사이트로 단순하게 시작합니다. 이후 배포 자동화, 관측, 알림, 장애 대응을
+						조금씩 붙이며 블로그 자체를 작은 운영 대상으로 다뤄봅니다.
+					</p>
+				</section>
+				<section class="timeline">
+					{
+						roadmap.map((item) => (
+							<article>
+								<div class="phase">{item.phase}</div>
+								<div>
+									<p class="status">{item.status}</p>
+									<h2>{item.title}</h2>
+									<ul>
+										{item.items.map((entry) => (
+											<li>{entry}</li>
+										))}
+									</ul>
+								</div>
+							</article>
+						))
+					}
+				</section>
+			</main>
+		</div>
 		<Footer />
 	</body>
 </html>

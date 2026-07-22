@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
+import GlobalSidebar from '../../components/GlobalSidebar.astro';
 import Header from '../../components/Header.astro';
 import { BLOG_CATEGORIES, SITE_DESCRIPTION } from '../../consts';
 
@@ -19,37 +20,39 @@ for (const post of posts) {
 	</head>
 	<body>
 		<Header />
-		<main>
-			<section class="page-title">
-				<p class="eyebrow">Categories</p>
-				<h1>학습 흐름별로 보기</h1>
-				<p>Docker에서 시작해 Network, Kubernetes, Cloud 운영으로 확장해가며 정리합니다.</p>
-			</section>
-			<section class="category-grid">
-				{
-					BLOG_CATEGORIES.map((category) => (
-						<a class="category-card" href={`/categories/${category.slug}/`}>
-							<div>
-								<p class="count">{counts.get(category.label) ?? 0} notes</p>
-								<h2>{category.label}</h2>
-								<p>{category.description}</p>
-							</div>
-						</a>
-					))
-				}
-			</section>
-		</main>
+		<div class="site-layout">
+			<GlobalSidebar />
+			<main>
+				<section class="page-title">
+					<p class="eyebrow">Categories</p>
+					<h1>학습 흐름별로 보기</h1>
+					<p>Docker에서 시작해 Network, Kubernetes, Cloud 운영으로 확장해가며 정리합니다.</p>
+				</section>
+				<section class="category-list">
+					{
+						BLOG_CATEGORIES.map((category) => (
+							<a class="category-row" href={`/categories/${category.slug}/`}>
+								<div>
+									<h2>{category.label}</h2>
+									<p>{category.description}</p>
+								</div>
+								<span>{counts.get(category.label) ?? 0} notes</span>
+							</a>
+						))
+					}
+				</section>
+			</main>
+		</div>
 		<Footer />
 	</body>
 </html>
 
 <style>
 	.page-title {
-		padding: 3rem 0 2rem;
+		padding: 2rem 0 1.75rem;
 		border-bottom: 1px solid rgb(var(--line));
 	}
-	.eyebrow,
-	.count {
+	.eyebrow {
 		margin: 0 0 0.75rem;
 		color: var(--accent);
 		font-size: 0.82rem;
@@ -59,40 +62,43 @@ for (const post of posts) {
 	.page-title p:last-child {
 		color: rgb(var(--muted));
 	}
-	.category-grid {
+	.category-list {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1rem;
-		padding: 2rem 0;
+		border-top: 1px solid rgb(var(--line));
+		margin-top: 2.25rem;
 	}
-	.category-card {
-		display: block;
-		min-height: 210px;
-		padding: 1.25rem;
-		background: rgb(var(--surface));
-		border: 1px solid rgb(var(--line));
-		border-radius: 8px;
+	.category-row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 1.5rem;
+		align-items: start;
+		padding: 1.15rem 0;
+		border-bottom: 1px solid rgb(var(--line));
 		color: inherit;
 		text-decoration: none;
 	}
-	.category-card h2 {
-		margin-bottom: 0.75rem;
-		font-size: 1.5rem;
+	.category-row h2 {
+		margin: 0 0 0.35rem;
+		font-size: 1.35rem;
 	}
-	.category-card p:not(.count) {
+	.category-row p {
+		max-width: 650px;
+		margin: 0;
 		color: rgb(var(--muted));
 	}
-	.category-card:hover h2 {
+	.category-row > span {
+		color: var(--accent);
+		font-size: 0.85rem;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+	.category-row:hover h2 {
 		color: var(--accent);
 	}
-	@media (max-width: 900px) {
-		.category-grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
-	}
 	@media (max-width: 720px) {
-		.category-grid {
+		.category-row {
 			grid-template-columns: 1fr;
+			gap: 0.5rem;
 		}
 	}
 </style>
