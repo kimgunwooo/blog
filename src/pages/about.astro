@@ -18,41 +18,77 @@ import { PROFILE_LINKS, SITE_DESCRIPTION } from '../consts';
 			<main class="about">
 				<section class="intro">
 					<p class="eyebrow">About</p>
-					<h1>김건우</h1>
+					<h1 class="about-title">
+						<span>운영하면서 막힌 지점을</span>
+						<br />
+						<span>다시 설명할 수 있을 때까지</span>
+					</h1>
 					<p>
-						백엔드와 DBA 업무를 하면서 배포, 컨테이너, 자동화, 관측성 쪽 문제를 자주 마주쳤습니다.
-						이 블로그에는 그때마다 애매하게 넘어갔던 개념을 다시 파고든 기록과, 홈 랩에서 직접
-						실험해본 내용을 Docker, Network, Kubernetes, Cloud 같은 흐름으로 남깁니다.
+						저는 SaaS 제품 운영 과정에서 DB 변경 관리, 배포 자동화, 컨테이너, 관측성 문제를
+						함께 다뤄온 김건우입니다. 이 블로그에는 업무와 홈 랩에서 막혔던 지점을 다시
+						설명할 수 있을 때까지 파고든 기록을 남깁니다.
 					</p>
 				</section>
 
-				<section class="about-grid">
-					<article>
-						<h2>Work Style</h2>
+				<section class="about-note">
+					<div class="note-index">
+						<span>01</span>
+						<strong>Profile</strong>
+					</div>
+					<div>
+						<h2>운영 문제를 재현 가능한 기준으로 바꾸는 데 관심이 있습니다</h2>
+						<p>
+							DBA로 시작했지만 Jenkins, Docker, Ansible, OpenTelemetry 같은 도구를 다루며
+							반복 배포와 서버 준비, 수집 유실 같은 문제를 줄이는 작업을 경험했습니다. 지금은
+							Platform / DevOps 엔지니어를 목표로 컨테이너 플랫폼과 운영 자동화를 계속
+							정리하고 있습니다.
+						</p>
+					</div>
+				</section>
+				<section class="about-note">
+					<div class="note-index">
+						<span>02</span>
+						<strong>Writing Rule</strong>
+					</div>
+					<div>
+						<h2>정답보다 막힌 지점을 먼저 적습니다</h2>
 						<p>
 							처음부터 정답을 안다고 쓰기보다, 무엇을 몰랐고 어디서 헷갈렸는지부터 적습니다.
 							이해한 내용은 명령어, 그림, 작은 실험으로 다시 확인합니다.
 						</p>
-					</article>
-					<article>
-						<h2>Current Lab</h2>
+					</div>
+				</section>
+				<section class="about-note">
+					<div class="note-index">
+						<span>03</span>
+						<strong>Current Lab</strong>
+					</div>
+					<div>
+						<h2>홈 Kubernetes를 작은 운영 환경으로 씁니다</h2>
 						<p>
 							홈 Kubernetes에 개인 서비스를 올리고, GitOps 배포, 관측성, 알림, 장애 재현을 작은
 							단위로 반복합니다.
 						</p>
-					</article>
-					<article>
-						<h2>Channels</h2>
+					</div>
+				</section>
+				<section class="about-note">
+					<div class="note-index">
+						<span>04</span>
+						<strong>Channels</strong>
+					</div>
+					<div>
+						<h2>직접 운영하는 블로그로 가져갑니다</h2>
 						<p>
-							Velog에는 완성도 있는 요약을 남기고, 이 사이트에는 더 긴 학습 노트와 실험 과정을
-							남깁니다.
+							Velog나 Tistory도 좋은 선택지지만, 저는 글을 쓰는 공간 자체도 직접 운영해보고
+							싶었습니다. Markdown으로 글을 관리하고, Git으로 배포하고, 검색과 면접 카드, AI
+							피드백 같은 기능을 하나씩 붙이며 블로그 자체를 작은 운영 대상으로 다룹니다.
 						</p>
 						<div class="links">
 							<a href={PROFILE_LINKS.github} target="_blank">GitHub</a>
 							<a href={PROFILE_LINKS.velog} target="_blank">Velog</a>
 							<a href={PROFILE_LINKS.email}>Email</a>
 						</div>
-					</article>
+					</div>
 				</section>
 			</main>
 		</div>
@@ -65,8 +101,18 @@ import { PROFILE_LINKS, SITE_DESCRIPTION } from '../consts';
 		max-width: 920px;
 	}
 	.intro {
-		padding: 3rem 0;
+		padding: 2rem 0 2rem;
 		border-bottom: 1px solid rgb(var(--line));
+	}
+	.about-title {
+		max-width: 860px;
+		font-size: clamp(1.95rem, 3.1vw, 2.5rem) !important;
+		line-height: 1.18;
+		word-break: keep-all;
+		overflow-wrap: normal;
+	}
+	.about-title span {
+		white-space: nowrap;
 	}
 	.eyebrow {
 		margin: 0 0 0.75rem;
@@ -80,24 +126,32 @@ import { PROFILE_LINKS, SITE_DESCRIPTION } from '../consts';
 		color: rgb(var(--muted));
 		font-size: 1.08rem;
 	}
-	.about-grid {
+	.about-note {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1rem;
-		padding: 3rem 0;
+		grid-template-columns: 150px minmax(0, 1fr);
+		gap: 1.5rem;
+		padding: 1.65rem 0;
+		border-bottom: 1px solid rgb(var(--line));
 	}
-	article {
-		padding: 1.1rem;
-		background: rgb(var(--surface));
-		border: 1px solid rgb(var(--line));
-		border-radius: 8px;
-	}
-	article h2 {
-		font-size: 1.15rem;
-	}
-	article p {
+	.note-index {
+		display: grid;
+		align-content: start;
+		gap: 0.35rem;
 		color: rgb(var(--muted));
-		font-size: 0.95rem;
+		font-size: 0.82rem;
+		font-weight: 800;
+		text-transform: uppercase;
+	}
+	.note-index span {
+		color: var(--accent);
+	}
+	.about-note h2 {
+		margin-bottom: 0.55rem;
+		font-size: 1.35rem;
+	}
+	.about-note p {
+		max-width: 680px;
+		color: rgb(var(--muted));
 	}
 	.links {
 		display: flex;
@@ -109,8 +163,9 @@ import { PROFILE_LINKS, SITE_DESCRIPTION } from '../consts';
 		text-decoration: none;
 	}
 	@media (max-width: 760px) {
-		.about-grid {
+		.about-note {
 			grid-template-columns: 1fr;
+			gap: 0.5rem;
 		}
 	}
 </style>

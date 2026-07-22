@@ -2,9 +2,9 @@
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
 import GlobalSidebar from '../../components/GlobalSidebar.astro';
 import Header from '../../components/Header.astro';
+import PostList from '../../components/PostList.astro';
 import { BLOG_CATEGORIES, SITE_DESCRIPTION } from '../../consts';
 
 export async function getStaticPaths() {
@@ -31,30 +31,20 @@ const posts = (await getCollection('blog'))
 			<GlobalSidebar />
 			<main>
 				<section class="page-title">
-					<p class="eyebrow">Category</p>
+					<p class="eyebrow">Topic</p>
 					<h1>{category.label}</h1>
 					<p>{category.description}</p>
 				</section>
-				<section class="posts">
-					{
-						posts.length === 0 ? (
-							<div class="empty">
-								<h2>아직 작성 중입니다</h2>
-								<p>이 카테고리는 앞으로 공부하면서 글을 채워갈 예정입니다.</p>
-							</div>
-						) : (
-							posts.map((post) => (
-								<a class="post-row" href={`/blog/${post.id}/`}>
-									<p>
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-									<h2>{post.data.title}</h2>
-									<span>{post.data.description}</span>
-								</a>
-							))
-						)
-					}
-				</section>
+				<div class="summary-line">
+					<span>{posts.length} notes</span>
+					<a href="/blog/">전체 글 보기</a>
+				</div>
+				<PostList
+					posts={posts}
+					showCategory={false}
+					emptyTitle={`${category.label} 글은 아직 준비 중입니다`}
+					emptyDescription="기본 개념부터 작은 실험까지 정리한 뒤 이 토픽에 추가할 예정입니다."
+				/>
 			</main>
 		</div>
 		<Footer />
@@ -63,7 +53,7 @@ const posts = (await getCollection('blog'))
 
 <style>
 	.page-title {
-		padding: 3rem 0 2rem;
+		padding: 2rem 0 1.5rem;
 		border-bottom: 1px solid rgb(var(--line));
 	}
 	.eyebrow {
@@ -73,35 +63,33 @@ const posts = (await getCollection('blog'))
 		font-weight: 700;
 		text-transform: uppercase;
 	}
-	.page-title p:last-child,
-	.post-row span,
-	.empty p {
+	.page-title p:last-child {
+		max-width: 680px;
 		color: rgb(var(--muted));
 	}
-	.posts {
-		display: grid;
-		gap: 0.75rem;
-		padding: 2rem 0;
+	.summary-line {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 1.15rem 0;
+		color: rgb(var(--muted));
+		font-size: 0.9rem;
 	}
-	.post-row,
-	.empty {
-		display: block;
-		padding: 1.25rem 0;
-		border-top: 1px solid rgb(var(--line));
-		color: inherit;
+	.summary-line span {
+		color: var(--accent);
+		font-weight: 800;
+	}
+	.summary-line a {
+		color: var(--accent);
+		font-weight: 700;
 		text-decoration: none;
 	}
-	.post-row p {
-		margin: 0 0 0.45rem;
-		color: var(--accent);
-		font-size: 0.82rem;
-		font-weight: 700;
-	}
-	.post-row h2 {
-		margin-bottom: 0.35rem;
-		font-size: 1.45rem;
-	}
-	.post-row:hover h2 {
-		color: var(--accent);
+	@media (max-width: 720px) {
+		.summary-line {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 0.35rem;
+		}
 	}
 </style>

@@ -10,6 +10,7 @@ const counts = new Map<string, number>();
 for (const post of posts) {
 	counts.set(post.data.category, (counts.get(post.data.category) ?? 0) + 1);
 }
+const currentPath = Astro.url.pathname;
 ---
 
 <aside class="global-sidebar" aria-label="블로그 사이드바">
@@ -42,7 +43,10 @@ for (const post of posts) {
 		<nav class="topic-list" aria-label="토픽">
 			{
 				BLOG_CATEGORIES.map((category) => (
-					<a href={`/categories/${category.slug}/`}>
+					<a
+						href={`/categories/${category.slug}/`}
+						class:list={{ active: currentPath.startsWith(`/categories/${category.slug}/`) }}
+					>
 						<span>{category.label}</span>
 						<small>{counts.get(category.label) ?? 0}</small>
 					</a>
@@ -163,6 +167,13 @@ for (const post of posts) {
 		border-top: 0;
 	}
 	.topic-list a:hover span {
+		color: var(--accent);
+	}
+	.topic-list a.active {
+		color: var(--accent);
+		font-weight: 800;
+	}
+	.topic-list a.active small {
 		color: var(--accent);
 	}
 	.topic-list small {

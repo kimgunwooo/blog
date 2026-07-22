@@ -84,6 +84,62 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 			.prose :global(li) {
 				margin-bottom: 0.35rem;
 			}
+			.prose :global(table) {
+				width: 100%;
+				margin: 1.25rem 0 1.75rem;
+				border: 1px solid rgb(var(--line));
+				border-collapse: separate;
+				border-spacing: 0;
+				border-radius: 10px;
+				background: #fff;
+				box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+				font-size: 0.93rem;
+				line-height: 1.55;
+				overflow: hidden;
+			}
+			.prose :global(thead) {
+				background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+			}
+			.prose :global(th),
+			.prose :global(td) {
+				padding: 0.85rem 1rem;
+				border-bottom: 1px solid rgb(var(--line));
+				text-align: left;
+				vertical-align: top;
+			}
+			.prose :global(th + th),
+			.prose :global(td + td) {
+				border-left: 1px solid rgb(var(--line));
+			}
+			.prose :global(th) {
+				color: rgb(var(--black));
+				font-weight: 800;
+				white-space: nowrap;
+			}
+			.prose :global(tbody tr:nth-child(even)) {
+				background: rgb(var(--surface) / 0.55);
+			}
+			.prose :global(td:first-child) {
+				width: 13rem;
+				white-space: nowrap;
+			}
+			.prose :global(tr:last-child td) {
+				border-bottom: 0;
+			}
+			.prose :global(td code) {
+				font-size: 0.9em;
+				font-weight: 700;
+			}
+			@media (max-width: 720px) {
+				.prose :global(table) {
+					display: block;
+					overflow-x: auto;
+				}
+				.prose :global(th),
+				.prose :global(td) {
+					min-width: 11rem;
+				}
+			}
 		</style>
 	</head>
 
@@ -96,7 +152,7 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 					<div class="hero-image">
 						{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
 					</div>
-					<div class="prose">
+					<div class="prose" data-pagefind-body>
 						<div class="title">
 							<div class="date">
 								<FormattedDate date={pubDate} />

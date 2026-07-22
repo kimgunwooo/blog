@@ -5,30 +5,46 @@ import GlobalSidebar from '../components/GlobalSidebar.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION } from '../consts';
 
-const roadmap = [
+const changelog = [
 	{
-		phase: 'v0',
-		title: 'Static Blog',
-		status: '진행 중',
-		items: ['Astro 정적 사이트', '개인 GitHub/GHCR 기준', 'Velog와 역할 분리'],
+		version: 'v0.4',
+		date: '2026.07.22',
+		title: '본문 검색 기능 추가',
+		items: [
+			'Pagefind를 붙여 Notes에서 글 본문까지 검색 가능하도록 변경',
+			'검색어와 Topic 필터를 함께 적용하도록 글 목록 동작 수정',
+			'빌드 시 검색 인덱스가 생성되도록 npm build 흐름에 Pagefind 추가',
+		],
 	},
 	{
-		phase: 'v1',
-		title: 'GitOps Deploy',
-		status: '다음',
-		items: ['Git tag 기반 이미지 빌드', 'Argo CD 배포', 'Cloudflare Tunnel 공개'],
+		version: 'v0.3',
+		date: '2026.07.22',
+		title: 'Notes와 Topics 구조 정리',
+		items: [
+			'상단 Categories 메뉴와 별도 허브 페이지 제거',
+			'사이드바 Topics는 빠른 주제 이동으로 유지',
+			'Topic 상세에서는 전체 글 목록으로 돌아가도록 링크 정리',
+		],
 	},
 	{
-		phase: 'v2',
-		title: 'Operate',
-		status: '계획',
-		items: ['Uptime check', '서비스 로그 수집', '배포 실패 알림'],
+		version: 'v0.2',
+		date: '2026.07',
+		title: '홈 Kubernetes 배포 연결',
+		items: [
+			'GHCR image와 Argo CD 기반 배포 흐름 구성',
+			'Cloudflare Tunnel을 통해 공개 URL 연결',
+			'ImagePullBackOff 발생 후 multi-platform build 기준 점검',
+		],
 	},
 	{
-		phase: 'v3',
-		title: 'Extend',
-		status: '계획',
-		items: ['검색/분석 추가 검토', '필요 시 PVC 설계', '장애 회고 문서화'],
+		version: 'v0.1',
+		date: '2026.07',
+		title: '정적 기술 블로그 시작',
+		items: [
+			'Astro 기반 Markdown 블로그 구성',
+			'Docker, Kubernetes, Observability, Automation 토픽 분리',
+			'Velog는 정리된 공개 글, 이 사이트는 실험 노트 중심으로 역할 분리',
+		],
 	},
 ];
 ---
@@ -45,19 +61,20 @@ const roadmap = [
 			<main>
 				<section class="page-title">
 					<p class="eyebrow">Ops Log</p>
-					<h1>이 블로그를 운영해보는 기록</h1>
+					<h1>블로그 변경 로그</h1>
 					<p>
-						처음에는 정적 사이트로 단순하게 시작합니다. 이후 배포 자동화, 관측, 알림, 장애 대응을
-						조금씩 붙이며 블로그 자체를 작은 운영 대상으로 다뤄봅니다.
+						검색, 토픽 구조, 배포 방식처럼 이 블로그 자체에 추가한 기능과 운영 변경을 버전
+						단위로 남깁니다. 장애 원인 분석이나 트러블슈팅은 별도 기술 노트로 분리합니다.
 					</p>
 				</section>
-				<section class="timeline">
+				<section class="timeline" aria-label="변경 로그">
 					{
-						roadmap.map((item) => (
-							<article>
-								<div class="phase">{item.phase}</div>
-								<div>
-									<p class="status">{item.status}</p>
+						changelog.map((item) => (
+							<article class="timeline-item">
+								<div class="timeline-date">{item.date}</div>
+								<div class="timeline-marker" aria-hidden="true"></div>
+								<div class="timeline-copy">
+									<p class="status">{item.version}</p>
 									<h2>{item.title}</h2>
 									<ul>
 										{item.items.map((entry) => (
@@ -75,9 +92,9 @@ const roadmap = [
 	</body>
 </html>
 
-<style>
+<style is:inline>
 	.page-title {
-		padding: 3rem 0 2rem;
+		padding: 2rem 0 1.5rem;
 		border-bottom: 1px solid rgb(var(--line));
 	}
 	.eyebrow,
@@ -94,31 +111,58 @@ const roadmap = [
 	}
 	.timeline {
 		display: grid;
-		gap: 1rem;
-		padding: 2rem 0;
+		position: relative;
+		padding: 2rem 0 0;
 	}
-	article {
-		display: grid;
-		grid-template-columns: 90px 1fr;
-		gap: 1rem;
-		padding: 1.25rem;
-		background: rgb(var(--surface));
-		border: 1px solid rgb(var(--line));
-		border-radius: 8px;
+	.timeline::before {
+		content: '';
+		position: absolute;
+		top: 2.45rem;
+		bottom: 0.4rem;
+		left: 108px;
+		width: 1px;
+		background: rgb(var(--line));
 	}
-	.phase {
+	.timeline-item {
 		display: grid;
-		place-items: center;
-		width: 56px;
-		height: 56px;
-		background: #fff;
-		border: 1px solid rgb(var(--line));
-		border-radius: 999px;
-		color: var(--accent);
+		grid-template-columns: 88px 40px minmax(0, 1fr);
+		gap: 0.8rem;
+		position: relative;
+		padding: 0 0 1.7rem;
+	}
+	.timeline-date {
+		padding-top: 0.2rem;
+		color: rgb(var(--muted));
+		font-size: 0.82rem;
 		font-weight: 700;
 	}
+	.timeline-marker {
+		position: relative;
+		z-index: 1;
+		width: 13px;
+		height: 13px;
+		margin-top: 0.38rem;
+		border: 2px solid var(--accent);
+		border-radius: 999px;
+		background: #fff;
+		box-shadow: 0 0 0 5px #fff;
+	}
+	.timeline-copy {
+		min-width: 0;
+		padding: 0 0 1.45rem;
+		border-bottom: 1px solid rgb(var(--line));
+	}
+	.timeline-item:last-child {
+		padding-bottom: 0;
+	}
+	.timeline-item:last-child .timeline-copy {
+		border-bottom: 0;
+	}
 	h2 {
+		margin: 0 0 0.7rem;
 		font-size: 1.3rem;
+		word-break: keep-all;
+		overflow-wrap: normal;
 	}
 	ul {
 		display: grid;
@@ -126,10 +170,27 @@ const roadmap = [
 		margin: 0;
 		padding-left: 1.1rem;
 		color: rgb(var(--muted));
+		word-break: keep-all;
+		overflow-wrap: normal;
 	}
 	@media (max-width: 720px) {
-		article {
-			grid-template-columns: 1fr;
+		.timeline::before {
+			left: 6px;
+		}
+		.timeline-item {
+			grid-template-columns: 20px minmax(0, 1fr);
+			gap: 0.75rem;
+		}
+		.timeline-date {
+			grid-column: 2;
+			padding-top: 0;
+		}
+		.timeline-marker {
+			grid-column: 1;
+			grid-row: 1 / span 2;
+		}
+		.timeline-copy {
+			grid-column: 2;
 		}
 	}
 </style>

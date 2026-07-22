@@ -1,0 +1,161 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import FormattedDate from './FormattedDate.astro';
+
+interface Props {
+	posts: CollectionEntry<'blog'>[];
+	showCategory?: boolean;
+	emptyTitle?: string;
+	emptyDescription?: string;
+}
+
+const {
+	posts,
+	showCategory = true,
+	emptyTitle = '아직 작성 중입니다',
+	emptyDescription = '이 주제는 공부하면서 글을 채워갈 예정입니다.',
+} = Astro.props;
+---
+
+{
+	posts.length === 0 ? (
+		<section class="empty-state">
+			<p class="empty-label">No notes yet</p>
+			<h2>{emptyTitle}</h2>
+			<p>{emptyDescription}</p>
+		</section>
+	) : (
+		<section class="post-list" aria-label="글 목록">
+			{posts.map((post) => (
+				<a
+					class="post-item"
+					href={`/blog/${post.id}/`}
+					data-post-item
+					data-title={post.data.title}
+					data-description={post.data.description}
+					data-category={post.data.category}
+					data-tags={post.data.tags.join(' ')}
+				>
+					<div class="post-meta">
+						<FormattedDate date={post.data.pubDate} />
+						{showCategory && <span class="category-badge">{post.data.category}</span>}
+					</div>
+					<div class="post-body">
+						<h2>{post.data.title}</h2>
+						<p>{post.data.description}</p>
+						{post.data.tags.length > 0 && (
+							<div class="post-tags">
+								{post.data.tags.map((tag) => (
+									<span>{tag}</span>
+								))}
+							</div>
+						)}
+					</div>
+				</a>
+			))}
+		</section>
+	)
+}
+
+<style>
+	.post-list {
+		display: grid;
+		border-top: 1px solid rgb(var(--line));
+	}
+	.post-item {
+		display: grid;
+		grid-template-columns: 148px minmax(0, 1fr);
+		gap: 1.4rem;
+		align-items: start;
+		padding: 1.45rem 0;
+		color: inherit;
+		border-bottom: 1px solid rgb(var(--line));
+		text-decoration: none;
+	}
+	.post-item.is-hidden {
+		display: none;
+	}
+	.post-meta {
+		display: grid;
+		gap: 0.35rem;
+		color: rgb(var(--muted));
+		font-size: 0.82rem;
+		font-weight: 700;
+		line-height: 1.4;
+		text-transform: uppercase;
+	}
+	.category-badge {
+		width: fit-content;
+		padding: 0.22rem 0.55rem;
+		color: var(--accent);
+		background: rgba(23, 74, 124, 0.06);
+		border: 1px solid rgba(23, 74, 124, 0.16);
+		border-radius: 999px;
+		font-size: 0.74rem;
+		font-weight: 800;
+		letter-spacing: 0;
+	}
+	.post-body h2 {
+		margin: 0 0 0.45rem;
+		font-size: clamp(1.25rem, 2vw, 1.55rem);
+		line-height: 1.28;
+	}
+	.post-body p {
+		max-width: 690px;
+		margin: 0;
+		color: rgb(var(--muted));
+		line-height: 1.65;
+	}
+	.post-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin-top: 0.8rem;
+	}
+	.post-tags span {
+		padding: 0.18rem 0.5rem;
+		color: rgb(var(--muted));
+		background: rgb(var(--surface));
+		border: 1px solid rgb(var(--line));
+		border-radius: 999px;
+		font-size: 0.76rem;
+		font-weight: 700;
+	}
+	.post-item:hover h2 {
+		color: var(--accent);
+	}
+	.empty-state {
+		margin-top: 2rem;
+		padding: 2rem 0;
+		border-top: 1px solid rgb(var(--line));
+		border-bottom: 1px solid rgb(var(--line));
+	}
+	.empty-label {
+		margin: 0 0 0.75rem;
+		color: var(--accent);
+		font-size: 0.8rem;
+		font-weight: 800;
+		text-transform: uppercase;
+	}
+	.empty-state h2 {
+		margin-bottom: 0.45rem;
+		font-size: 1.35rem;
+	}
+	.empty-state p:last-child {
+		max-width: 560px;
+		margin: 0;
+		color: rgb(var(--muted));
+	}
+	@media (max-width: 760px) {
+		.post-item {
+			grid-template-columns: 1fr;
+			gap: 0.8rem;
+			padding: 1.2rem 0;
+		}
+		.post-meta {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+		}
+	}
+</style>
