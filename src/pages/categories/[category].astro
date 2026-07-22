@@ -1,0 +1,103 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import Header from '../../components/Header.astro';
+import { BLOG_CATEGORIES, SITE_DESCRIPTION } from '../../consts';
+
+export async function getStaticPaths() {
+	return BLOG_CATEGORIES.map((category) => ({
+		params: { category: category.slug },
+		props: category,
+	}));
+}
+
+const category = Astro.props;
+const posts = (await getCollection('blog'))
+	.filter((post) => post.data.category === category.label)
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title={`${category.label} | DevOps Journey`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="page-title">
+				<p class="eyebrow">Category</p>
+				<h1>{category.label}</h1>
+				<p>{category.description}</p>
+			</section>
+			<section class="posts">
+				{
+					posts.length === 0 ? (
+						<div class="empty">
+							<h2>아직 작성 중입니다</h2>
+							<p>이 카테고리는 앞으로 공부하면서 글을 채워갈 예정입니다.</p>
+						</div>
+					) : (
+						posts.map((post) => (
+							<a class="post-row" href={`/blog/${post.id}/`}>
+								<p>
+									<FormattedDate date={post.data.pubDate} />
+								</p>
+								<h2>{post.data.title}</h2>
+								<span>{post.data.description}</span>
+							</a>
+						))
+					)
+				}
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.page-title {
+		padding: 3rem 0 2rem;
+		border-bottom: 1px solid rgb(var(--line));
+	}
+	.eyebrow {
+		margin: 0 0 0.75rem;
+		color: var(--accent);
+		font-size: 0.82rem;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+	.page-title p:last-child,
+	.post-row span,
+	.empty p {
+		color: rgb(var(--muted));
+	}
+	.posts {
+		display: grid;
+		gap: 0.75rem;
+		padding: 2rem 0;
+	}
+	.post-row,
+	.empty {
+		display: block;
+		padding: 1.25rem 0;
+		border-top: 1px solid rgb(var(--line));
+		color: inherit;
+		text-decoration: none;
+	}
+	.post-row p {
+		margin: 0 0 0.45rem;
+		color: var(--accent);
+		font-size: 0.82rem;
+		font-weight: 700;
+	}
+	.post-row h2 {
+		margin-bottom: 0.35rem;
+		font-size: 1.45rem;
+	}
+	.post-row:hover h2 {
+		color: var(--accent);
+	}
+</style>

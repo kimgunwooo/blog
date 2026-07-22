@@ -1,49 +1,295 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { BLOG_CATEGORIES, PROFILE_LINKS, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog'))
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+	.slice(0, 4);
+
+const categoryCounts = new Map<string, number>();
+for (const post of await getCollection('blog')) {
+	categoryCounts.set(post.data.category, (categoryCounts.get(post.data.category) ?? 0) + 1);
+}
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">Docker / Network / Kubernetes / Cloud</p>
+					<h1>DevOps Journey</h1>
+					<p class="lead">
+						배포하다 막힌 것, 이해가 흐릿했던 개념, 직접 실험한 결과를 Docker부터
+						Kubernetes와 Cloud까지 이어서 정리합니다.
+					</p>
+					<div class="actions">
+						<a class="primary" href="/blog">글 보기</a>
+						<a class="secondary" href={PROFILE_LINKS.github} target="_blank">GitHub</a>
+					</div>
+				</div>
+				<aside class="profile-card">
+					<p class="label">Current Focus</p>
+					<ul>
+						<li>Docker image, layer, BuildKit cache 기본기 정리</li>
+						<li>Docker network 이후 Kubernetes network로 확장</li>
+						<li>홈 Kubernetes에 직접 배포하며 Cloud/운영 주제 연결</li>
+					</ul>
+				</aside>
+			</section>
+
+			<section class="section-block">
+				<div class="section-heading">
+					<p class="eyebrow">Technical Notes</p>
+					<h2>최근 기록</h2>
+				</div>
+				<div class="note-list">
+					{
+						posts.map((post) => (
+							<a class="note-row" href={`/blog/${post.id}/`}>
+								<div>
+									<p class="note-date">
+										<FormattedDate date={post.data.pubDate} />
+									</p>
+									<h3>{post.data.title}</h3>
+									<p>{post.data.description}</p>
+								</div>
+								<div class="tags">
+									{post.data.tags.map((tag) => (
+										<span>{tag}</span>
+									))}
+								</div>
+							</a>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="section-block">
+				<div class="section-heading">
+					<p class="eyebrow">Topics</p>
+					<h2>요즘 정리하는 것</h2>
+				</div>
+				<div class="category-grid">
+					{
+						BLOG_CATEGORIES.map((item) => (
+							<a class="category-card" href={`/categories/${item.slug}/`}>
+								<div>
+									<h3>{item.label}</h3>
+									<p>{item.description}</p>
+								</div>
+								<span>{categoryCounts.get(item.label) ?? 0} notes</span>
+							</a>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="split-block">
+				<div>
+					<p class="eyebrow">Why Here</p>
+					<h2>Velog와 다르게 쓰는 공간</h2>
+				</div>
+				<p>
+					Velog는 읽기 좋게 정리한 공개 글을 올리는 곳으로 유지합니다. 이 사이트에는 아직 다듬는
+					중인 긴 노트, 실험 조건, 실패한 가정, 나중에 다시 볼 참고 자료를 더 자유롭게 남깁니다.
+					블로그 자체도 홈 Kubernetes에 올려보며 배포와 운영을 조금씩 붙여갈 예정입니다.
+				</p>
+			</section>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+		gap: 2rem;
+		align-items: end;
+		padding: 3.5rem 0 2.75rem;
+		border-bottom: 1px solid rgb(var(--line));
+	}
+	.eyebrow,
+	.label,
+	.note-date {
+		margin: 0 0 0.75rem;
+		color: var(--accent);
+		font-size: 0.82rem;
+		font-weight: 700;
+		letter-spacing: 0;
+		text-transform: uppercase;
+	}
+	.lead {
+		max-width: 720px;
+		margin: 0;
+		color: rgb(var(--muted));
+		font-size: 1.2rem;
+		line-height: 1.65;
+	}
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 1.75rem;
+	}
+	.actions a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 42px;
+		padding: 0 1rem;
+		border: 1px solid rgb(var(--line));
+		border-radius: 6px;
+		text-decoration: none;
+		font-weight: 700;
+	}
+	.actions .primary {
+		background: var(--accent);
+		color: white;
+		border-color: var(--accent);
+	}
+	.actions .secondary {
+		color: var(--accent);
+	}
+	.profile-card {
+		padding: 1.25rem;
+		background: rgb(var(--surface));
+		border: 1px solid rgb(var(--line));
+		border-radius: 8px;
+	}
+	.profile-card ul {
+		display: grid;
+		gap: 0.7rem;
+		margin: 0;
+		padding-left: 1rem;
+		color: rgb(var(--gray-dark));
+		font-size: 0.95rem;
+	}
+	.section-block {
+		padding: 3rem 0;
+		border-bottom: 1px solid rgb(var(--line));
+	}
+	.section-heading {
+		margin-bottom: 1.25rem;
+	}
+	.section-heading h2,
+	.split-block h2 {
+		margin: 0;
+	}
+	.note-list {
+		display: grid;
+		gap: 0.85rem;
+	}
+	.note-row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 1rem;
+		padding: 1rem 0;
+		border-top: 1px solid rgb(var(--line));
+		color: inherit;
+		text-decoration: none;
+	}
+	.note-row h3 {
+		margin-bottom: 0.35rem;
+	}
+	.note-row p {
+		margin-bottom: 0;
+		color: rgb(var(--muted));
+	}
+	.note-row:hover h3 {
+		color: var(--accent);
+	}
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 0.4rem;
+		max-width: 340px;
+	}
+	.tags span {
+		display: inline-flex;
+		align-items: center;
+		height: 26px;
+		padding: 0 0.55rem;
+		background: rgb(var(--surface));
+		border: 1px solid rgb(var(--line));
+		border-radius: 999px;
+		color: rgb(var(--muted));
+		font-size: 0.78rem;
+	}
+	.category-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 0.85rem;
+	}
+	.category-card {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		min-height: 185px;
+		padding: 1rem;
+		background: rgb(var(--surface));
+		border: 1px solid rgb(var(--line));
+		border-radius: 8px;
+		color: inherit;
+		text-decoration: none;
+	}
+	.category-card:hover h3 {
+		color: var(--accent);
+	}
+	.category-card p {
+		color: rgb(var(--muted));
+		font-size: 0.95rem;
+	}
+	.category-card span {
+		color: var(--accent);
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+	.split-block {
+		display: grid;
+		grid-template-columns: 0.8fr 1.2fr;
+		gap: 2rem;
+		padding: 3rem 0;
+	}
+	.split-block > p {
+		margin: 0;
+		color: rgb(var(--muted));
+	}
+	@media (max-width: 900px) {
+		.hero,
+		.split-block {
+			grid-template-columns: 1fr;
+		}
+		.category-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+	@media (max-width: 720px) {
+		.hero {
+			padding-top: 2rem;
+		}
+		.lead {
+			font-size: 1.05rem;
+		}
+		.note-row {
+			grid-template-columns: 1fr;
+		}
+		.tags {
+			justify-content: flex-start;
+			max-width: none;
+		}
+		.category-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

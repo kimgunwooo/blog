@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="520" viewBox="0 0 1180 520" role="img" aria-labelledby="title desc">
+  <title id="title">Container lifecycle</title>
+  <desc id="desc">Docker run resolves image, pulls layers, creates container filesystem and network, then starts the configured process.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#0f766e"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box { fill: #ffffff; stroke: #334155; stroke-width: 2; rx: 13; }
+      .net { fill: #ecfeff; stroke: #0891b2; stroke-width: 2; rx: 13; }
+      .fs { fill: #fefce8; stroke: #ca8a04; stroke-width: 2; rx: 13; }
+      .proc { fill: #f0fdf4; stroke: #16a34a; stroke-width: 2; rx: 13; }
+      .text { font-family: Arial, sans-serif; font-size: 21px; fill: #0f172a; font-weight: 700; }
+      .small { font-family: Arial, sans-serif; font-size: 16px; fill: #334155; }
+      .line { stroke: #0f766e; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect class="bg" width="1180" height="520"/>
+
+  <rect class="box" x="45" y="180" width="180" height="110"/>
+  <text class="text" x="82" y="225">docker run</text>
+  <text class="small" x="78" y="255">image + options</text>
+
+  <rect class="box" x="275" y="160" width="190" height="150"/>
+  <text class="text" x="324" y="205">Resolve</text>
+  <text class="small" x="307" y="235">tag -> digest</text>
+  <text class="small" x="307" y="260">manifest select</text>
+
+  <rect class="fs" x="515" y="160" width="210" height="150"/>
+  <text class="text" x="555" y="205">Filesystem</text>
+  <text class="small" x="545" y="235">read-only image layers</text>
+  <text class="small" x="545" y="260">+ writable layer</text>
+
+  <rect class="net" x="775" y="80" width="230" height="125"/>
+  <text class="text" x="838" y="125">Network</text>
+  <text class="small" x="810" y="155">bridge IP / DNS</text>
+  <text class="small" x="810" y="180">port publish NAT</text>
+
+  <rect class="proc" x="775" y="280" width="230" height="125"/>
+  <text class="text" x="850" y="325">Process</text>
+  <text class="small" x="814" y="355">ENTRYPOINT + CMD</text>
+  <text class="small" x="814" y="380">namespaces + cgroups</text>
+
+  <rect class="proc" x="1035" y="205" width="110" height="110"/>
+  <text class="text" x="1068" y="250">PID 1</text>
+  <text class="small" x="1055" y="280">app start</text>
+
+  <path class="line" d="M225 235 L275 235"/>
+  <path class="line" d="M465 235 L515 235"/>
+  <path class="line" d="M725 205 C745 170, 755 145, 775 145"/>
+  <path class="line" d="M725 270 C745 305, 755 340, 775 340"/>
+  <path class="line" d="M1005 342 C1030 330, 1035 300, 1035 270"/>
+  <path class="line" d="M1005 145 C1030 160, 1035 205, 1035 245"/>
+</svg>

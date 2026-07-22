@@ -1,0 +1,107 @@
+name: Publish image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".dockerignore"
+      - ".github/workflows/publish.yml"
+      - "Dockerfile"
+      - "astro.config.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - "public/**"
+      - "src/**"
+      - "deploy/k8s/**"
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag to publish, for example v0.1.0
+        required: true
+        default: v0.1.0
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/kimgunwooo/platform-ops-log
+
+jobs:
+  build:
+    name: Build and push GHCR image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve image tag
+        id: image
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            tag="${{ inputs.image_tag }}"
+          elif [[ "${GITHUB_REF_NAME}" == v* ]]; then
+            tag="${GITHUB_REF_NAME}"
+          else
+            tag="git-${GITHUB_SHA::12}"
+          fi
+
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "ref=${IMAGE_NAME}:${tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.image.outputs.ref }}
+
+      - name: Update Argo CD image tag
+        if: github.event_name != 'workflow_dispatch'
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          path = Path("deploy/k8s/kustomization.yaml")
+          image_tag = os.environ["IMAGE_TAG"]
+          text = path.read_text()
+          updated = re.sub(r"newTag: .+", f"newTag: {image_tag}", text, count=1)
+          if updated == text:
+              raise SystemExit("newTag was not updated")
+          path.write_text(updated)
+          PY
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+
+      - name: Commit Argo CD manifest update
+        if: github.event_name != 'workflow_dispatch'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add deploy/k8s/kustomization.yaml
+          if git diff --cached --quiet; then
+            echo "No manifest update needed."
+            exit 0
+          fi
+
+          git commit -m "chore: update platform ops log image [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

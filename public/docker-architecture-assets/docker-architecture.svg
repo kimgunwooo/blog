@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="620" viewBox="0 0 1180 620" role="img" aria-labelledby="title desc">
+  <title id="title">Docker architecture</title>
+  <desc id="desc">Docker CLI sends API requests to Docker Engine. Docker Engine uses BuildKit for builds, containerd and runc for container lifecycle, and registry for image push and pull.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box { fill: #ffffff; stroke: #334155; stroke-width: 2; rx: 14; }
+      .sub { fill: #eef6ff; stroke: #2563eb; stroke-width: 2; rx: 12; }
+      .runtime { fill: #f0fdf4; stroke: #16a34a; stroke-width: 2; rx: 12; }
+      .registry { fill: #fff7ed; stroke: #f97316; stroke-width: 2; rx: 12; }
+      .text { font-family: Arial, sans-serif; font-size: 22px; fill: #0f172a; font-weight: 700; }
+      .small { font-family: Arial, sans-serif; font-size: 16px; fill: #334155; }
+      .caption { font-family: Arial, sans-serif; font-size: 18px; fill: #475569; }
+      .line { stroke: #2563eb; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #64748b; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1180" height="620"/>
+
+  <rect class="box" x="55" y="80" width="220" height="130"/>
+  <text class="text" x="98" y="132">Docker CLI</text>
+  <text class="small" x="93" y="166">docker run</text>
+  <text class="small" x="93" y="190">docker buildx build</text>
+
+  <rect class="box" x="410" y="60" width="360" height="500"/>
+  <text class="text" x="500" y="105">Docker Engine</text>
+  <text class="caption" x="505" y="132">dockerd + API server</text>
+
+  <rect class="sub" x="455" y="170" width="270" height="95"/>
+  <text class="text" x="545" y="210">Buildx</text>
+  <text class="small" x="492" y="238">Build request client</text>
+
+  <rect class="sub" x="455" y="295" width="270" height="95"/>
+  <text class="text" x="535" y="335">BuildKit</text>
+  <text class="small" x="495" y="363">Dockerfile -> LLB -> image</text>
+
+  <rect class="runtime" x="455" y="420" width="270" height="95"/>
+  <text class="text" x="530" y="460">containerd</text>
+  <text class="small" x="485" y="488">container lifecycle manager</text>
+
+  <rect class="runtime" x="825" y="420" width="210" height="95"/>
+  <text class="text" x="902" y="460">runc</text>
+  <text class="small" x="858" y="488">OCI runtime</text>
+
+  <rect class="registry" x="855" y="130" width="240" height="150"/>
+  <text class="text" x="930" y="178">Registry</text>
+  <text class="small" x="893" y="212">Docker Hub / Harbor</text>
+  <text class="small" x="893" y="238">image + registry cache</text>
+
+  <path class="line" d="M275 145 C335 145, 350 110, 410 110"/>
+  <text class="caption" x="300" y="120">Docker API</text>
+
+  <path class="thin" d="M590 170 L590 150"/>
+  <path class="thin" d="M590 265 L590 295"/>
+  <path class="thin" d="M590 390 L590 420"/>
+  <path class="thin" d="M725 468 L825 468"/>
+  <path class="line" d="M725 340 C800 330, 820 265, 855 230"/>
+  <path class="line" d="M855 180 C805 160, 780 160, 725 205"/>
+
+  <text class="caption" x="786" y="317">push / pull image</text>
+  <text class="caption" x="785" y="348">cache-from / cache-to</text>
+  <text class="caption" x="776" y="450">start container</text>
+</svg>

@@ -1,63 +1,112 @@
 ---
-import AboutHeroImage from '../assets/blog-placeholder-about.jpg';
-import Layout from '../layouts/BlogPost.astro';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { PROFILE_LINKS, SITE_DESCRIPTION } from '../consts';
 ---
 
-<Layout
-	title="About Me"
-	description="Lorem ipsum dolor sit amet"
-	pubDate={new Date('August 08 2021')}
-	heroImage={AboutHeroImage}
->
-	<p>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-		labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo
-		viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam
-		adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus
-		et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus
-		vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque
-		sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
-	</p>
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title="About | DevOps Journey" description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main class="about">
+			<section class="intro">
+				<p class="eyebrow">About</p>
+				<h1>김건우</h1>
+				<p>
+					백엔드와 DBA 업무를 하면서 배포, 컨테이너, 자동화, 관측성 쪽 문제를 자주 마주쳤습니다.
+					이 블로그에는 그때마다 애매하게 넘어갔던 개념을 다시 파고든 기록과, 홈 랩에서 직접
+					실험해본 내용을 Docker, Network, Kubernetes, Cloud 같은 흐름으로 남깁니다.
+				</p>
+			</section>
 
-	<p>
-		Morbi tristique senectus et netus. Id semper risus in hendrerit gravida rutrum quisque non
-		tellus. Habitasse platea dictumst quisque sagittis purus sit amet. Tellus molestie nunc non
-		blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor posuere ac ut. Fringilla urna
-		porttitor rhoncus dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis
-		massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc.
-		Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui vivamus arcu felis
-		bibendum. Dignissim suspendisse in est ante in nibh mauris. Sed tempus urna et pharetra pharetra
-		massa massa ultricies mi.
-	</p>
+			<section class="about-grid">
+				<article>
+					<h2>Work Style</h2>
+					<p>
+						처음부터 정답을 안다고 쓰기보다, 무엇을 몰랐고 어디서 헷갈렸는지부터 적습니다. 이해한
+						내용은 명령어, 그림, 작은 실험으로 다시 확인합니다.
+					</p>
+				</article>
+				<article>
+					<h2>Current Lab</h2>
+					<p>
+						홈 Kubernetes에 개인 서비스를 올리고, GitOps 배포, 관측성, 알림, 장애 재현을 작은
+						단위로 반복합니다.
+					</p>
+				</article>
+				<article>
+					<h2>Channels</h2>
+					<p>
+						Velog에는 완성도 있는 요약을 남기고, 이 사이트에는 더 긴 학습 노트와 실험 과정을
+						남깁니다.
+					</p>
+					<div class="links">
+						<a href={PROFILE_LINKS.github} target="_blank">GitHub</a>
+						<a href={PROFILE_LINKS.velog} target="_blank">Velog</a>
+						<a href={PROFILE_LINKS.email}>Email</a>
+					</div>
+				</article>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
 
-	<p>
-		Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque. Diam sit amet nisl
-		suscipit. Lacus viverra vitae congue eu consequat ac felis donec. Egestas integer eget aliquet
-		nibh praesent tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In vitae
-		turpis massa sed elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem
-		dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra. Posuere ac ut consequat
-		semper viverra nam. Laoreet suspendisse interdum consectetur libero id faucibus. Diam phasellus
-		vestibulum lorem sed risus ultricies tristique. Rhoncus dolor purus non enim praesent elementum
-		facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium quam
-		vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare. Fringilla
-		urna porttitor rhoncus dolor purus non. Amet dictum sit amet justo donec enim.
-	</p>
-
-	<p>
-		Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper
-		viverra. Tellus mauris a diam maecenas sed enim ut sem viverra. Venenatis urna cursus eget nunc
-		scelerisque viverra mauris in. Arcu ac tortor dignissim convallis aenean et tortor at. Curabitur
-		gravida arcu ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus
-		pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim sit amet. Ut enim
-		blandit volutpat maecenas volutpat blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id
-		cursus metus aliquam eleifend mi.
-	</p>
-
-	<p>
-		Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus imperdiet. Id porta
-		nibh venenatis cras sed felis eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam
-		tempor orci eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non tellus orci
-		ac. Blandit libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed pulvinar
-		proin gravida. Egestas integer eget aliquet nibh praesent tristique magna.
-	</p>
-</Layout>
+<style>
+	.about {
+		max-width: 920px;
+	}
+	.intro {
+		padding: 3rem 0;
+		border-bottom: 1px solid rgb(var(--line));
+	}
+	.eyebrow {
+		margin: 0 0 0.75rem;
+		color: var(--accent);
+		font-size: 0.82rem;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+	.intro p {
+		max-width: 760px;
+		color: rgb(var(--muted));
+		font-size: 1.08rem;
+	}
+	.about-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1rem;
+		padding: 3rem 0;
+	}
+	article {
+		padding: 1.1rem;
+		background: rgb(var(--surface));
+		border: 1px solid rgb(var(--line));
+		border-radius: 8px;
+	}
+	article h2 {
+		font-size: 1.15rem;
+	}
+	article p {
+		color: rgb(var(--muted));
+		font-size: 0.95rem;
+	}
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+	.links a {
+		font-weight: 700;
+		text-decoration: none;
+	}
+	@media (max-width: 760px) {
+		.about-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

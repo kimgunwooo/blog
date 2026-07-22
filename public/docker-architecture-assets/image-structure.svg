@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="620" viewBox="0 0 1180 620" role="img" aria-labelledby="title desc">
+  <title id="title">Docker image structure</title>
+  <desc id="desc">A tag points to a manifest. A manifest references config and filesystem layers. A running container adds a writable layer on top of read-only image layers.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#7c3aed"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box { fill: #ffffff; stroke: #334155; stroke-width: 2; rx: 12; }
+      .manifest { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 2; rx: 12; }
+      .config { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 12; }
+      .layer { fill: #ecfdf5; stroke: #16a34a; stroke-width: 2; rx: 12; }
+      .write { fill: #fff7ed; stroke: #f97316; stroke-width: 2; rx: 12; }
+      .text { font-family: Arial, sans-serif; font-size: 21px; fill: #0f172a; font-weight: 700; }
+      .small { font-family: Arial, sans-serif; font-size: 16px; fill: #334155; }
+      .line { stroke: #7c3aed; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .stack { stroke: #334155; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect class="bg" width="1180" height="620"/>
+
+  <rect class="box" x="55" y="110" width="200" height="105"/>
+  <text class="text" x="100" y="150">Tag</text>
+  <text class="small" x="86" y="180">app:dev-38</text>
+
+  <rect class="manifest" x="330" y="80" width="250" height="165"/>
+  <text class="text" x="395" y="125">Manifest</text>
+  <text class="small" x="365" y="155">config digest</text>
+  <text class="small" x="365" y="180">layer digest list</text>
+  <text class="small" x="365" y="205">platform metadata</text>
+
+  <rect class="config" x="680" y="65" width="270" height="130"/>
+  <text class="text" x="755" y="110">Config JSON</text>
+  <text class="small" x="718" y="140">env / cmd / entrypoint</text>
+  <text class="small" x="718" y="165">history / labels</text>
+
+  <rect class="layer" x="680" y="235" width="270" height="70"/>
+  <text class="text" x="745" y="278">Layer 3</text>
+  <rect class="layer" x="680" y="320" width="270" height="70"/>
+  <text class="text" x="745" y="363">Layer 2</text>
+  <rect class="layer" x="680" y="405" width="270" height="70"/>
+  <text class="text" x="745" y="448">Layer 1</text>
+
+  <rect class="write" x="680" y="510" width="270" height="65"/>
+  <text class="text" x="720" y="550">Container writable layer</text>
+
+  <path class="line" d="M255 163 L330 163"/>
+  <path class="line" d="M580 140 L680 125"/>
+  <path class="line" d="M580 185 C625 230, 640 270, 680 270"/>
+  <path class="line" d="M580 185 C625 290, 640 355, 680 355"/>
+  <path class="line" d="M580 185 C625 350, 640 440, 680 440"/>
+
+  <text class="small" x="975" y="275">read-only</text>
+  <text class="small" x="975" y="360">read-only</text>
+  <text class="small" x="975" y="445">read-only</text>
+  <text class="small" x="975" y="550">per-container</text>
+</svg>

@@ -8,17 +8,17 @@ import Header from '../components/Header.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro.props;
 ---
 
-<html lang="en">
+<html lang="ko">
 	<head>
 		<BaseHead title={title} description={description} />
 		<style>
 			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
+				width: 880px;
+				max-width: calc(100% - 2em);
+				margin: auto;
 			}
 			.hero-image {
 				width: 100%;
@@ -30,27 +30,60 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				box-shadow: var(--box-shadow);
 			}
 			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
+				width: 100%;
+				max-width: 760px;
 				margin: auto;
-				padding: 1em;
+				padding: 2rem 0 4rem;
 				color: rgb(var(--gray-dark));
 			}
 			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
+				margin-bottom: 2rem;
+				padding: 2rem 0 1.5rem;
+				border-bottom: 1px solid rgb(var(--line));
+				line-height: 1.25;
 			}
 			.title h1 {
-				margin: 0 0 0.5em 0;
+				margin: 0 0 0.65rem;
+				font-size: clamp(2rem, 6vw, 3.2rem);
+			}
+			.description {
+				max-width: 680px;
+				margin: 0;
+				color: rgb(var(--muted));
+				font-size: 1.05rem;
 			}
 			.date {
 				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+				color: var(--accent);
+				font-size: 0.88rem;
+				font-weight: 700;
 			}
 			.last-updated-on {
 				font-style: italic;
+			}
+			.tags {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.4rem;
+				margin-top: 1rem;
+			}
+			.tags span {
+				padding: 0.25rem 0.5rem;
+				background: rgb(var(--surface));
+				border: 1px solid rgb(var(--line));
+				border-radius: 999px;
+				color: rgb(var(--muted));
+				font-size: 0.78rem;
+			}
+			.prose :global(h2) {
+				margin-top: 2.2rem;
+				font-size: 1.55rem;
+			}
+			.prose :global(h3) {
+				margin-top: 1.75rem;
+			}
+			.prose :global(li) {
+				margin-bottom: 0.35rem;
 			}
 		</style>
 	</head>
@@ -75,7 +108,16 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 							}
 						</div>
 						<h1>{title}</h1>
-						<hr />
+						<p class="description">{description}</p>
+						{
+							tags.length > 0 && (
+								<div class="tags">
+									{tags.map((tag) => (
+										<span>{tag}</span>
+									))}
+								</div>
+							)
+						}
 					</div>
 					<slot />
 				</div>

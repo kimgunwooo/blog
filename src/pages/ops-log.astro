@@ -1,0 +1,131 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_DESCRIPTION } from '../consts';
+
+const roadmap = [
+	{
+		phase: 'v0',
+		title: 'Static Blog',
+		status: '진행 중',
+		items: ['Astro 정적 사이트', '개인 GitHub/GHCR 기준', 'Velog와 역할 분리'],
+	},
+	{
+		phase: 'v1',
+		title: 'GitOps Deploy',
+		status: '다음',
+		items: ['Git tag 기반 이미지 빌드', 'Argo CD 배포', 'Cloudflare Tunnel 공개'],
+	},
+	{
+		phase: 'v2',
+		title: 'Operate',
+		status: '계획',
+		items: ['Uptime check', '서비스 로그 수집', '배포 실패 알림'],
+	},
+	{
+		phase: 'v3',
+		title: 'Extend',
+		status: '계획',
+		items: ['검색/분석 추가 검토', '필요 시 PVC 설계', '장애 회고 문서화'],
+	},
+];
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title="Ops Log | DevOps Journey" description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="page-title">
+				<p class="eyebrow">Ops Log</p>
+				<h1>이 블로그를 운영해보는 기록</h1>
+				<p>
+					처음에는 정적 사이트로 단순하게 시작합니다. 이후 배포 자동화, 관측, 알림, 장애 대응을
+					조금씩 붙이며 블로그 자체를 작은 운영 대상으로 다뤄봅니다.
+				</p>
+			</section>
+			<section class="timeline">
+				{
+					roadmap.map((item) => (
+						<article>
+							<div class="phase">{item.phase}</div>
+							<div>
+								<p class="status">{item.status}</p>
+								<h2>{item.title}</h2>
+								<ul>
+									{item.items.map((entry) => (
+										<li>{entry}</li>
+									))}
+								</ul>
+							</div>
+						</article>
+					))
+				}
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.page-title {
+		padding: 3rem 0 2rem;
+		border-bottom: 1px solid rgb(var(--line));
+	}
+	.eyebrow,
+	.status {
+		margin: 0 0 0.75rem;
+		color: var(--accent);
+		font-size: 0.82rem;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+	.page-title p:last-child {
+		max-width: 760px;
+		color: rgb(var(--muted));
+	}
+	.timeline {
+		display: grid;
+		gap: 1rem;
+		padding: 2rem 0;
+	}
+	article {
+		display: grid;
+		grid-template-columns: 90px 1fr;
+		gap: 1rem;
+		padding: 1.25rem;
+		background: rgb(var(--surface));
+		border: 1px solid rgb(var(--line));
+		border-radius: 8px;
+	}
+	.phase {
+		display: grid;
+		place-items: center;
+		width: 56px;
+		height: 56px;
+		background: #fff;
+		border: 1px solid rgb(var(--line));
+		border-radius: 999px;
+		color: var(--accent);
+		font-weight: 700;
+	}
+	h2 {
+		font-size: 1.3rem;
+	}
+	ul {
+		display: grid;
+		gap: 0.45rem;
+		margin: 0;
+		padding-left: 1.1rem;
+		color: rgb(var(--muted));
+	}
+	@media (max-width: 720px) {
+		article {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

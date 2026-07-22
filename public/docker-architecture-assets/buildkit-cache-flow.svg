@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="660" viewBox="0 0 1180 660" role="img" aria-labelledby="title desc">
+  <title id="title">BuildKit cache flow</title>
+  <desc id="desc">BuildKit converts Dockerfile to LLB graph, calculates cache keys per vertex, checks local cache and registry cache, executes misses, then exports image and cache.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .box { fill: #ffffff; stroke: #334155; stroke-width: 2; rx: 12; }
+      .build { fill: #eef6ff; stroke: #2563eb; stroke-width: 2; rx: 12; }
+      .cache { fill: #fef3c7; stroke: #d97706; stroke-width: 2; rx: 12; }
+      .run { fill: #ecfdf5; stroke: #16a34a; stroke-width: 2; rx: 12; }
+      .text { font-family: Arial, sans-serif; font-size: 20px; fill: #0f172a; font-weight: 700; }
+      .small { font-family: Arial, sans-serif; font-size: 15px; fill: #334155; }
+      .line { stroke: #2563eb; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .thin { stroke: #64748b; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect class="bg" width="1180" height="660"/>
+
+  <rect class="box" x="50" y="65" width="230" height="110"/>
+  <text class="text" x="110" y="108">Dockerfile</text>
+  <text class="small" x="84" y="138">COPY package*.json</text>
+  <text class="small" x="84" y="160">RUN npm ci ...</text>
+
+  <rect class="box" x="50" y="235" width="230" height="110"/>
+  <text class="text" x="105" y="278">Build context</text>
+  <text class="small" x="89" y="308">files after .dockerignore</text>
+
+  <rect class="build" x="355" y="135" width="250" height="150"/>
+  <text class="text" x="410" y="180">Dockerfile frontend</text>
+  <text class="small" x="393" y="212">parse Dockerfile</text>
+  <text class="small" x="393" y="237">emit LLB graph</text>
+
+  <rect class="build" x="680" y="100" width="250" height="220"/>
+  <text class="text" x="745" y="145">BuildKit solver</text>
+  <text class="small" x="720" y="178">vertex key 계산</text>
+  <text class="small" x="720" y="205">local cache 조회</text>
+  <text class="small" x="720" y="232">registry cache 조회</text>
+  <text class="small" x="720" y="259">miss step 실행</text>
+
+  <rect class="cache" x="715" y="405" width="200" height="95"/>
+  <text class="text" x="750" y="445">Local cache</text>
+  <text class="small" x="748" y="472">BuildKit store</text>
+
+  <rect class="cache" x="955" y="405" width="180" height="95"/>
+  <text class="text" x="1002" y="445">Harbor</text>
+  <text class="small" x="983" y="472">registry cache</text>
+
+  <rect class="run" x="405" y="435" width="210" height="95"/>
+  <text class="text" x="455" y="475">Execute miss</text>
+  <text class="small" x="438" y="502">RUN/COPY/ADD</text>
+
+  <rect class="run" x="690" y="555" width="230" height="70"/>
+  <text class="text" x="742" y="598">Image export</text>
+
+  <path class="line" d="M280 120 L355 180"/>
+  <path class="line" d="M280 290 L355 238"/>
+  <path class="line" d="M605 210 L680 210"/>
+  <path class="thin" d="M805 320 L815 405"/>
+  <path class="thin" d="M930 225 C1005 260, 1045 335, 1045 405"/>
+  <path class="thin" d="M680 260 C620 310, 560 370, 515 435"/>
+  <path class="line" d="M615 482 C690 510, 745 525, 785 555"/>
+  <path class="line" d="M915 555 C990 540, 1030 505, 1045 500"/>
+  <path class="line" d="M815 500 L815 555"/>
+
+  <text class="small" x="945" y="360">--cache-from</text>
+  <text class="small" x="950" y="540">--cache-to</text>
+</svg>
