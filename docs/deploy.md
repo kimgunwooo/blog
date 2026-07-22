@@ -28,17 +28,19 @@ Stop the local container with `Ctrl-C`.
 
 ## Image tags
 
-The GitHub Actions workflow publishes on either:
+The GitHub Actions workflow publishes on:
 
-- tag push matching `v*`, for example `v0.1.0`
-- manual `workflow_dispatch` with an explicit `image_tag`
+- `main` push with paths that affect the site or Kubernetes manifests
+- manual `workflow_dispatch` with an explicit `image_tag`, only for one-off image publishing
 
-Before deploying, set the same tag in `deploy/k8s/kustomization.yaml`:
+On `main` push, the workflow publishes an image tagged `git-<commit>` and commits the same tag back into `deploy/k8s/kustomization.yaml`.
+
+Manual dispatch does not update the GitOps manifest. If you use it, set the same tag in `deploy/k8s/kustomization.yaml` yourself:
 
 ```yaml
 images:
   - name: ghcr.io/kimgunwooo/platform-ops-log
-    newTag: v0.1.0
+    newTag: git-<commit>
 ```
 
 ## Argo apply checklist
@@ -47,7 +49,7 @@ Do not apply the Argo application until these are true:
 
 - The repo exists at `https://github.com/kimgunwooo/platform-ops-log.git`.
 - The commit containing `deploy/k8s` has been pushed.
-- The GHCR image tag in `deploy/k8s/kustomization.yaml` has been published.
+- The GHCR image tag in `deploy/k8s/kustomization.yaml` has been published for `linux/amd64` and `linux/arm64`.
 - If the repo is private, Argo CD has read access to the repo.
 - If the GHCR package is private, create an image pull secret in namespace `platform-ops-log` and add `imagePullSecrets` to the Deployment before sync.
 - `kubectl kustomize deploy/k8s` renders cleanly.
@@ -60,7 +62,7 @@ Apply only after the checklist passes:
 kubectl --server=https://100.125.75.80:6443 apply -k deploy/argocd
 ```
 
-Then sync in Argo CD and verify:
+Argo CD is configured with automated sync. Verify:
 
 ```bash
 kubectl --server=https://100.125.75.80:6443 -n argocd get applications.argoproj.io platform-ops-log
