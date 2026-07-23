@@ -1,12 +1,12 @@
 ---
-import { PROFILE_LINKS } from '../consts';
+import { PROFILE_LINKS, SITE_TITLE } from '../consts';
 
 const today = new Date();
 ---
 
 <footer>
 	<div class="footer-inner">
-		<p>&copy; {today.getFullYear()} Gunwoo Kim. DevOps Journey.</p>
+		<p>&copy; {today.getFullYear()} Gunwoo Kim. {SITE_TITLE}.</p>
 		<div class="social-links">
 			<a href={PROFILE_LINKS.github} target="_blank">GitHub</a>
 			<a href={PROFILE_LINKS.velog} target="_blank">Velog</a>

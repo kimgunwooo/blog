@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import GlobalSidebar from '../../components/GlobalSidebar.astro';
 import Header from '../../components/Header.astro';
 import PostList from '../../components/PostList.astro';
-import { BLOG_CATEGORIES, SITE_DESCRIPTION } from '../../consts';
+import { BLOG_CATEGORIES, SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -19,7 +19,7 @@ for (const post of posts) {
 <!doctype html>
 <html lang="ko">
 	<head>
-		<BaseHead title="Notes | DevOps Journey" description={SITE_DESCRIPTION} />
+		<BaseHead title={`Notes | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />

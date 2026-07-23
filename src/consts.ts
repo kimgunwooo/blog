@@ -1,4 +1,4 @@
-export const SITE_TITLE = 'DevOps Journey';
+export const SITE_TITLE = "Gunwoo's Ops Log";
 export const SITE_DESCRIPTION =
 	'Docker, Network, Kubernetes, Cloud, Observability를 이해하고 실험한 내용을 정리하는 기술 블로그입니다.';
 
@@ -38,5 +38,15 @@ export const BLOG_CATEGORIES = [
 		slug: 'automation',
 		label: 'Automation',
 		description: 'Jenkins, Ansible, GitOps로 반복 작업을 줄일 때 필요한 기준을 기록합니다.',
+	},
+	{
+		slug: 'database',
+		label: 'Database',
+		description: 'DB 동시성, 캐시, 저장 경로를 운영 기준으로 정리합니다.',
+	},
+	{
+		slug: 'performance',
+		label: 'Performance',
+		description: '병목을 찾고 수치로 개선 여부를 확인한 기록을 정리합니다.',
 	},
 ];

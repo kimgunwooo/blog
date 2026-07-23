@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import GlobalSidebar from '../../components/GlobalSidebar.astro';
 import Header from '../../components/Header.astro';
 import PostList from '../../components/PostList.astro';
-import { BLOG_CATEGORIES, SITE_DESCRIPTION } from '../../consts';
+import { BLOG_CATEGORIES, SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 export async function getStaticPaths() {
 	return BLOG_CATEGORIES.map((category) => ({
@@ -23,7 +23,7 @@ const posts = (await getCollection('blog'))
 <!doctype html>
 <html lang="ko">
 	<head>
-		<BaseHead title={`${category.label} | DevOps Journey`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${category.label} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
