@@ -19,6 +19,17 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 			.post-main {
 				min-width: 0;
 			}
+			.post-layout {
+				width: 1360px;
+				max-width: calc(100% - 2em);
+			}
+			.post-shell {
+				display: grid;
+				grid-template-columns: minmax(0, 760px) 280px;
+				gap: 4rem;
+				align-items: start;
+				justify-content: center;
+			}
 			.hero-image {
 				width: 100%;
 			}
@@ -31,9 +42,60 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 			.prose {
 				width: 100%;
 				max-width: 760px;
-				margin: auto;
+				margin: 0;
 				padding: 2rem 0 4rem;
 				color: rgb(var(--gray-dark));
+			}
+			.post-toc {
+				position: sticky;
+				top: 5.5rem;
+				display: none;
+				max-height: calc(100vh - 7rem);
+				margin-top: 3.65rem;
+				padding: 0.25rem 0 0.25rem 1.25rem;
+				border-left: 2px solid rgb(var(--line));
+				overflow-x: hidden;
+				overflow-y: auto;
+			}
+			.post-toc.is-visible {
+				display: block;
+			}
+			.toc-title {
+				display: none;
+			}
+			.toc-list {
+				display: grid;
+				gap: 0.5rem;
+			}
+			:global(.post-toc .toc-link) {
+				display: block;
+				margin-left: 0;
+				padding: 0;
+				color: #8b95a1;
+				font-size: 0.78rem;
+				line-height: 1.5;
+				text-decoration: none;
+				overflow-wrap: anywhere;
+				transition:
+					color 160ms ease,
+					font-size 160ms ease,
+					transform 160ms ease;
+			}
+			:global(.post-toc .toc-link:hover) {
+				color: rgb(var(--gray-dark));
+			}
+			:global(.post-toc .toc-link.is-active) {
+				color: rgb(var(--black));
+				font-size: 0.88rem;
+				font-weight: 800;
+				transform: translateX(0.15rem);
+			}
+			:global(.post-toc .toc-link[data-level='3']) {
+				padding-left: 1rem;
+				font-size: 0.74rem;
+			}
+			:global(.post-toc .toc-link[data-level='3'].is-active) {
+				font-size: 0.84rem;
 			}
 			.title {
 				margin-bottom: 2rem;
@@ -77,9 +139,11 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 			.prose :global(h2) {
 				margin-top: 2.2rem;
 				font-size: 1.55rem;
+				scroll-margin-top: 5.5rem;
 			}
 			.prose :global(h3) {
 				margin-top: 1.75rem;
+				scroll-margin-top: 5.5rem;
 			}
 			.prose :global(li) {
 				margin-bottom: 0.35rem;
@@ -130,7 +194,139 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 				font-size: 0.9em;
 				font-weight: 700;
 			}
+			.prose :global(.mermaid-frame) {
+				position: relative;
+				margin: 1.75rem 0 2.25rem;
+				background:
+					linear-gradient(180deg, rgba(248, 250, 252, 0.74) 0%, rgba(255, 255, 255, 1) 100%),
+					#fff;
+				border: 1px solid rgb(var(--line));
+				border-radius: 14px;
+				box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+			}
+			.prose :global(.mermaid-canvas) {
+				padding: 1.5rem;
+				overflow-x: auto;
+			}
+			.prose :global(.mermaid) {
+				min-width: max-content;
+			}
+			.prose :global(.mermaid svg) {
+				display: block;
+				max-width: 100%;
+				height: auto;
+				margin: 0 auto;
+			}
+			.prose :global(.mermaid .node rect),
+			.prose :global(.mermaid .node polygon),
+			.prose :global(.mermaid .node path) {
+				stroke-width: 1.6px !important;
+				filter: drop-shadow(0 6px 10px rgba(15, 23, 42, 0.06));
+			}
+			.prose :global(.mermaid .cluster rect) {
+				stroke-width: 1.4px !important;
+				rx: 8px;
+			}
+			.prose :global(.mermaid .edgeLabel) {
+				border-radius: 6px;
+				color: rgb(var(--muted));
+				font-size: 0.88rem;
+			}
+			.prose :global(.mermaid .edgeLabel p) {
+				background: rgba(255, 255, 255, 0.92) !important;
+				border: 1px solid rgb(var(--line));
+				border-radius: 6px;
+				padding: 0.08rem 0.28rem;
+			}
+			.prose :global(.mermaid .label),
+			.prose :global(.mermaid .nodeLabel) {
+				line-height: 1.35;
+			}
+			.prose :global(.mermaid-expand) {
+				position: absolute;
+				top: 0.6rem;
+				right: 0.6rem;
+				z-index: 2;
+				width: 2rem;
+				height: 2rem;
+				border: 1px solid rgb(var(--line));
+				border-radius: 8px;
+				background: rgba(255, 255, 255, 0.92);
+				color: rgb(var(--muted));
+				font-size: 1rem;
+				line-height: 1;
+				cursor: pointer;
+				box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+				transition:
+					background-color 160ms ease,
+					color 160ms ease,
+					transform 160ms ease;
+			}
+			.prose :global(.mermaid-expand:hover) {
+				background: #eef6ff;
+				color: var(--accent);
+				transform: translateY(-1px);
+			}
+			:global(.diagram-modal) {
+				position: fixed;
+				inset: 0;
+				z-index: 1000;
+				display: grid;
+				place-items: center;
+				padding: 2rem;
+				background: rgba(15, 23, 42, 0.72);
+				backdrop-filter: blur(6px);
+			}
+			:global(.diagram-modal[hidden]) {
+				display: none;
+			}
+			:global(.diagram-modal__bar) {
+				position: absolute;
+				top: 1.25rem;
+				right: 1.25rem;
+				display: flex;
+				justify-content: flex-end;
+			}
+			:global(.diagram-modal__close) {
+				width: 2.25rem;
+				height: 2.25rem;
+				border: 1px solid rgba(255, 255, 255, 0.28);
+				border-radius: 10px;
+				background: rgba(255, 255, 255, 0.95);
+				color: rgb(var(--gray-dark));
+				font-size: 1.25rem;
+				line-height: 1;
+				cursor: pointer;
+			}
+			:global(.diagram-modal__body) {
+				display: grid;
+				place-items: center;
+				width: min(72vw, 1040px);
+				max-height: 72vh;
+				padding: 1rem;
+				border: 1px solid rgba(255, 255, 255, 0.22);
+				border-radius: 16px;
+				background: #fff;
+				overflow: auto;
+			}
+			:global(.diagram-modal__body svg) {
+				display: block;
+				width: auto;
+				max-width: 100%;
+				height: auto;
+				max-height: calc(72vh - 2rem);
+			}
 			@media (max-width: 720px) {
+				:global(.diagram-modal) {
+					padding: 1rem;
+				}
+				:global(.diagram-modal__body) {
+					width: min(94vw, 1040px);
+					max-height: 78vh;
+				}
+				:global(.diagram-modal__body svg) {
+					max-height: calc(78vh - 2rem);
+				}
 				.prose :global(table) {
 					display: block;
 					overflow-x: auto;
@@ -140,47 +336,261 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 					min-width: 11rem;
 				}
 			}
+			@media (max-width: 1180px) {
+				.post-layout {
+					width: 1160px;
+				}
+				.post-shell {
+					display: block;
+				}
+				.prose {
+					margin: auto;
+				}
+				.post-toc {
+					display: none !important;
+				}
+			}
 		</style>
 	</head>
 
 	<body>
 		<Header />
-		<div class="site-layout">
+		<div class="site-layout post-layout">
 			<GlobalSidebar />
 			<main class="post-main">
-				<article>
-					<div class="hero-image">
-						{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-					</div>
-					<div class="prose" data-pagefind-body>
-						<div class="title">
-							<div class="date">
-								<FormattedDate date={pubDate} />
+				<div class="post-shell">
+					<article>
+						<div class="hero-image">
+							{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+						</div>
+						<div class="prose" data-pagefind-body>
+							<div class="title">
+								<div class="date">
+									<FormattedDate date={pubDate} />
+									{
+										updatedDate && (
+											<div class="last-updated-on">
+												Last updated on <FormattedDate date={updatedDate} />
+											</div>
+										)
+									}
+								</div>
+								<h1>{title}</h1>
+								<p class="description">{description}</p>
 								{
-									updatedDate && (
-										<div class="last-updated-on">
-											Last updated on <FormattedDate date={updatedDate} />
+									tags.length > 0 && (
+										<div class="tags">
+											{tags.map((tag) => (
+												<span>{tag}</span>
+											))}
 										</div>
 									)
 								}
 							</div>
-							<h1>{title}</h1>
-							<p class="description">{description}</p>
-							{
-								tags.length > 0 && (
-									<div class="tags">
-										{tags.map((tag) => (
-											<span>{tag}</span>
-										))}
-									</div>
-								)
-							}
+							<slot />
 						</div>
-						<slot />
-					</div>
-				</article>
+					</article>
+					<aside class="post-toc" data-post-toc aria-label="글 목차">
+						<p class="toc-title">On this page</p>
+						<nav class="toc-list" data-toc-list></nav>
+					</aside>
+				</div>
 			</main>
 		</div>
 		<Footer />
+		<script is:inline type="module">
+			const prose = document.querySelector('.prose');
+			const toc = document.querySelector('[data-post-toc]');
+			const tocList = document.querySelector('[data-toc-list]');
+			const slugify = (text) =>
+				text
+					.trim()
+					.toLowerCase()
+					.replace(/[^\p{Letter}\p{Number}\s-]/gu, '')
+					.replace(/\s+/g, '-')
+					.replace(/-+/g, '-');
+
+			if (prose && toc && tocList) {
+				const headings = [...prose.querySelectorAll('h2, h3')].filter(
+					(heading) => !heading.closest('.title'),
+				);
+				const usedIds = new Set();
+
+				headings.forEach((heading) => {
+					if (!heading.id) {
+						const baseId = slugify(heading.textContent ?? '') || 'section';
+						let id = baseId;
+						let index = 2;
+						while (usedIds.has(id) || document.getElementById(id)) {
+							id = `${baseId}-${index}`;
+							index += 1;
+						}
+						heading.id = id;
+					}
+					usedIds.add(heading.id);
+
+					const link = document.createElement('a');
+					link.className = 'toc-link';
+					link.href = `#${heading.id}`;
+					link.textContent = heading.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+					link.dataset.level = heading.tagName === 'H3' ? '3' : '2';
+					tocList.append(link);
+				});
+
+				if (headings.length > 1) {
+					toc.classList.add('is-visible');
+				}
+
+				const links = [...tocList.querySelectorAll('a')];
+				const setActive = (id) => {
+					links.forEach((link) => {
+						link.classList.toggle('is-active', link.getAttribute('href') === `#${id}`);
+					});
+				};
+				links.forEach((link) => {
+					link.addEventListener('click', () => {
+						const targetId = link.getAttribute('href')?.slice(1);
+						if (targetId) {
+							setActive(targetId);
+						}
+					});
+				});
+
+				const observer = new IntersectionObserver(
+					(entries) => {
+						const visible = entries
+							.filter((entry) => entry.isIntersecting)
+							.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+						if (visible?.target?.id) {
+							setActive(visible.target.id);
+						}
+					},
+					{
+						rootMargin: '-18% 0px -70% 0px',
+						threshold: 0,
+					},
+				);
+
+				headings.forEach((heading) => observer.observe(heading));
+				if (headings[0]?.id) {
+					setActive(headings[0].id);
+				}
+			}
+
+			const mermaidBlocks = [
+				...document.querySelectorAll('pre[data-language="mermaid"], pre > code.language-mermaid'),
+			];
+			if (mermaidBlocks.length > 0) {
+				const { default: mermaid } = await import(
+					'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'
+				);
+				mermaid.initialize({
+					startOnLoad: false,
+					theme: 'base',
+					securityLevel: 'loose',
+					flowchart: {
+						htmlLabels: true,
+						curve: 'basis',
+						nodeSpacing: 58,
+						rankSpacing: 72,
+						padding: 18,
+						wrappingWidth: 180,
+					},
+					themeVariables: {
+						background: '#ffffff',
+						mainBkg: '#f8fafc',
+						primaryColor: '#eef6ff',
+						primaryTextColor: '#111827',
+						primaryBorderColor: '#174a7c',
+						secondaryColor: '#f8fafc',
+						secondaryBorderColor: '#94a3b8',
+						tertiaryColor: '#ffffff',
+						tertiaryBorderColor: '#d8e1ec',
+						clusterBkg: '#f8fafc',
+						clusterBorder: '#d8e1ec',
+						lineColor: '#64748b',
+						defaultLinkColor: '#64748b',
+						edgeLabelBackground: '#ffffff',
+						textColor: '#1f2937',
+						titleColor: '#111827',
+						nodeTextColor: '#111827',
+						fontSize: '15px',
+						fontFamily:
+							'-apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif',
+					},
+				});
+
+				mermaidBlocks.forEach((block) => {
+					const frame = document.createElement('figure');
+					frame.className = 'mermaid-frame';
+					const canvas = document.createElement('div');
+					canvas.className = 'mermaid-canvas';
+					const container = document.createElement('div');
+					container.className = 'mermaid';
+					container.textContent = block.textContent ?? '';
+					canvas.append(container);
+					frame.append(canvas);
+					const target = block instanceof HTMLPreElement ? block : block.closest('pre');
+					target?.replaceWith(frame);
+				});
+
+				await mermaid.run({
+					nodes: document.querySelectorAll('.mermaid'),
+				});
+
+				const modal = document.createElement('div');
+				modal.className = 'diagram-modal';
+				modal.hidden = true;
+				modal.innerHTML = `
+					<div class="diagram-modal__bar">
+						<button class="diagram-modal__close" type="button" aria-label="다이어그램 닫기">×</button>
+					</div>
+					<div class="diagram-modal__body" role="document"></div>
+				`;
+				document.body.append(modal);
+
+				const modalBody = modal.querySelector('.diagram-modal__body');
+				const closeModal = () => {
+					modal.hidden = true;
+					modalBody?.replaceChildren();
+					document.body.style.overflow = '';
+				};
+				modal.querySelector('.diagram-modal__close')?.addEventListener('click', closeModal);
+				modal.addEventListener('click', (event) => {
+					const target = event.target;
+					if (target instanceof Element && !target.closest('.diagram-modal__body')) {
+						closeModal();
+					}
+				});
+				document.addEventListener('keydown', (event) => {
+					if (event.key === 'Escape' && !modal.hidden) {
+						closeModal();
+					}
+				});
+
+				document.querySelectorAll('.mermaid-frame').forEach((frame, index) => {
+					const svg = frame.querySelector('.mermaid svg');
+					if (!svg) {
+						return;
+					}
+					const button = document.createElement('button');
+					button.className = 'mermaid-expand';
+					button.type = 'button';
+					button.setAttribute('aria-label', '다이어그램 크게 보기');
+					button.textContent = '⤢';
+					button.addEventListener('click', (event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						const clone = svg.cloneNode(true);
+						clone.removeAttribute('style');
+						clone.setAttribute('aria-label', `diagram-${index + 1}`);
+						modalBody?.replaceChildren(clone);
+						modal.hidden = false;
+						document.body.style.overflow = 'hidden';
+					});
+					frame.append(button);
+				});
+			}
+		</script>
 	</body>
 </html>

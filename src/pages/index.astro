@@ -2,19 +2,14 @@
 import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
 import GlobalSidebar from '../components/GlobalSidebar.astro';
 import Header from '../components/Header.astro';
-import { BLOG_CATEGORIES, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import PostList from '../components/PostList.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const posts = (await getCollection('blog'))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-	.slice(0, 4);
-
-const categoryCounts = new Map<string, number>();
-for (const post of await getCollection('blog')) {
-	categoryCounts.set(post.data.category, (categoryCounts.get(post.data.category) ?? 0) + 1);
-}
+	.slice(0, 8);
 ---
 
 <!doctype html>
@@ -55,7 +50,7 @@ for (const post of await getCollection('blog')) {
 							<div class="terminal-lines">
 								<p data-terminal-line><span class="prompt">></span> 직접 막힌 지점을 기록하고, 작은 실험으로 다시 확인합니다.</p>
 								<p data-terminal-line><span class="prompt">></span> Docker layer, network, GitOps, observability를 연결해서 정리합니다.</p>
-								<p data-terminal-line><span class="prompt">></span> Velog에는 완성된 글을, 이곳에는 실험 과정과 기준을 남깁니다.<span class="cursor" aria-hidden="true"></span></p>
+								<p data-terminal-line><span class="prompt">></span> 실험 과정, 실패한 가정, 재검증 기준을 남깁니다.<span class="cursor" aria-hidden="true"></span></p>
 							</div>
 							<div class="terminal-feed" aria-hidden="true">
 								<p data-terminal-feed><span>[watch]</span> docker/buildkit-cache.md indexed</p>
@@ -68,68 +63,13 @@ for (const post of await getCollection('blog')) {
 
 				<section class="section-block">
 					<div class="section-heading">
-						<p class="eyebrow">Technical Notes</p>
-						<h2>최근 기록</h2>
-					</div>
-					<div class="note-list">
-						{
-							posts.map((post) => (
-								<a class="note-row" href={`/blog/${post.id}/`}>
-									<div>
-										<p class="note-date">
-											<FormattedDate date={post.data.pubDate} />
-										</p>
-										<h3>{post.data.title}</h3>
-										<p>{post.data.description}</p>
-									</div>
-									<div class="tags">
-										{post.data.tags.map((tag) => (
-											<span>{tag}</span>
-										))}
-									</div>
-								</a>
-							))
-						}
-					</div>
-				</section>
-
-				<section class="section-block">
-					<div class="section-heading">
-						<p class="eyebrow">Topics</p>
-						<h2>요즘 정리하는 것</h2>
-					</div>
-					<div class="topic-list">
-						{
-							BLOG_CATEGORIES.map((item) => (
-								<a class="topic-row" href={`/categories/${item.slug}/`}>
-									<div>
-										<h3>{item.label}</h3>
-										<p>{item.description}</p>
-									</div>
-									<span>{categoryCounts.get(item.label) ?? 0} notes</span>
-								</a>
-							))
-						}
-					</div>
-				</section>
-
-				<section class="why-card">
-					<p class="eyebrow">Why Here</p>
-					<h2>Velog에는 정리된 글, 이곳에는 실험 기록</h2>
-					<div class="why-grid">
 						<div>
-							<strong>Velog</strong>
-							<p>읽기 좋게 다듬은 공개 글과 회고를 올립니다.</p>
+							<p class="eyebrow">Technical Notes</p>
+							<h2>최근 기록</h2>
 						</div>
-						<div>
-							<strong>{SITE_TITLE}</strong>
-							<p>실험 조건, 실패한 가정, 재검증 기준처럼 다시 봐야 할 운영 노트를 남깁니다.</p>
-						</div>
-						<div>
-							<strong>Home Kubernetes</strong>
-							<p>블로그 자체를 배포하며 GitOps, 모니터링, 알림을 하나씩 붙여갑니다.</p>
-						</div>
+						<a class="section-link" href="/blog/">전체 글 보기</a>
 					</div>
+					<PostList posts={posts} />
 				</section>
 			</main>
 		</div>
@@ -218,8 +158,7 @@ for (const post of await getCollection('blog')) {
 		border-bottom: 1px solid rgb(var(--line));
 	}
 	.eyebrow,
-	.label,
-	.note-date {
+	.label {
 		margin: 0 0 0.75rem;
 		color: var(--accent);
 		font-size: 0.82rem;
@@ -445,132 +384,31 @@ for (const post of await getCollection('blog')) {
 		border-bottom: 1px solid rgb(var(--line));
 	}
 	.section-heading {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 1rem;
 		margin-bottom: 1.25rem;
 	}
 	.section-heading h2 {
 		margin: 0;
 	}
-	.note-list {
-		display: grid;
-		gap: 0.85rem;
-	}
-	.note-row {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		gap: 1rem;
-		padding: 1rem 0;
-		border-top: 1px solid rgb(var(--line));
-		color: inherit;
+	.section-link {
+		color: var(--accent);
+		font-size: 0.86rem;
+		font-weight: 800;
 		text-decoration: none;
 	}
-	.note-row h3 {
-		margin-bottom: 0.35rem;
-	}
-	.note-row p {
-		margin-bottom: 0;
-		color: rgb(var(--muted));
-	}
-	.note-row:hover h3 {
-		color: var(--accent);
-	}
-	.tags {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		gap: 0.4rem;
-		max-width: 340px;
-	}
-	.tags span {
-		display: inline-flex;
-		align-items: center;
-		height: 26px;
-		padding: 0 0.55rem;
-		background: rgb(var(--surface));
-		border: 1px solid rgb(var(--line));
-		border-radius: 999px;
-		color: rgb(var(--muted));
-		font-size: 0.78rem;
-	}
-	.topic-list {
-		display: grid;
-		border-top: 1px solid rgb(var(--line));
-	}
-	.topic-row {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		gap: 1.5rem;
-		align-items: start;
-		padding: 1rem 0;
-		border-bottom: 1px solid rgb(var(--line));
-		color: inherit;
-		text-decoration: none;
-	}
-	.topic-row:hover h3 {
-		color: var(--accent);
-	}
-	.topic-row h3 {
-		margin: 0 0 0.25rem;
-	}
-	.topic-row p {
-		max-width: 680px;
-		margin: 0;
-		color: rgb(var(--muted));
-		font-size: 0.95rem;
-	}
-	.topic-row span {
-		color: var(--accent);
-		font-size: 0.8rem;
-		font-weight: 700;
-		white-space: nowrap;
-	}
-	.why-card {
-		padding: 2.5rem 0 3rem;
-	}
-	.why-card h2 {
-		max-width: none;
-		margin: 0 0 1.25rem;
-		font-size: clamp(1.35rem, 2.4vw, 1.9rem);
-	}
-	.why-grid {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.75rem;
-	}
-	.why-grid div {
-		padding: 1rem;
-		background: rgb(var(--surface));
-		border: 1px solid rgb(var(--line));
-		border-radius: 8px;
-	}
-	.why-grid strong {
-		display: block;
-		margin-bottom: 0.35rem;
-		color: rgb(var(--black));
-	}
-	.why-grid p {
-		margin: 0;
-		color: rgb(var(--muted));
-		font-size: 0.94rem;
-	}
-	@media (max-width: 900px) {
-		.why-grid {
-			grid-template-columns: 1fr;
-		}
+	.section-link:hover {
+		text-decoration: underline;
 	}
 	@media (max-width: 720px) {
 		.hero {
 			padding-top: 2rem;
 		}
-		.note-row {
-			grid-template-columns: 1fr;
-		}
-		.tags {
-			justify-content: flex-start;
-			max-width: none;
-		}
-		.topic-row {
-			grid-template-columns: 1fr;
-			gap: 0.35rem;
+		.section-heading {
+			align-items: start;
+			flex-direction: column;
 		}
 	}
 </style>
