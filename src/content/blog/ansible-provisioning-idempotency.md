@@ -1,50 +1,101 @@
 ---
-title: 'Ansible idempotency를 changed 수로만 보면 안 되는 이유'
-description: '같은 playbook을 반복 실행하면서 changed 결과를 어떻게 해석해야 하는지 정리했다.'
+title: 'Shell script에서 상태 기반 Provisioning으로 바꾼 뒤, changed=1을 해석한 방법'
+description: 'IDC Demo/PoC 테넌트 서버 준비를 Ansible role과 playbook으로 나누고, 재실행 결과를 drift·재적용·비수렴으로 분리해 검증한 기록.'
 category: 'Automation'
-pubDate: '2026-07-02'
-tags: ['ansible', 'provisioning', 'idempotency', 'homelab']
+pubDate: '2026-07-27'
+tags: ['ansible', 'provisioning', 'idempotency', 'docker-compose', 'postgresql']
 ---
 
-Ansible을 처음 쓸 때는 “두 번째 실행에서 `changed=0`이 나오면 좋은 playbook”이라고 단순하게 생각했다. 그런데 실제로는 changed가 남아도 문제가 아닐 수 있고, 반대로 changed가 0이어도 검증이 충분하지 않을 수 있다.
+새 테넌트 서버를 만들 때 처음에는 shell script로 충분하다고 생각했다. Docker를 설치하고, 디렉터리를 만들고, `.env`를 놓고, PostgreSQL과 Compose를 준비하면 됐다.
 
-이 글은 홈 랩 노드에 playbook을 반복 적용하면서 idempotency를 어떻게 봐야 하는지 정리한 메모다.
+문제는 환경이 늘면서부터였다. 재실행했을 때 무엇이 다시 바뀌었는지, 그 변경이 원격 서버의 drift인지 playbook의 특성인지, 일부 역할만 다시 적용해도 되는지를 설명하기 어려웠다. 그래서 목표를 “스크립트를 더 길게 만드는 것”이 아니라 **테넌트 서버가 도달해야 할 상태를 선언하고, 같은 입력으로 다시 검증하는 것**으로 바꿨다.
 
-## 문제
+> 검증 범위: IDC Demo/PoC를 위한 disposable 서버의 tenant bootstrap과 runtime secret 경계다. 애플리케이션 전체를 상용 배포한 결과나 완전한 멱등성을 주장하지 않는다.
 
-노드 프로비저닝은 한 번 성공했다고 끝나지 않는다. 커널 파라미터, 패키지 설치, systemd 서비스, container runtime 설정은 재실행 시 매번 `changed`가 발생하면 실제 drift와 단순 재적용을 구분하기 어렵다.
+## 먼저 책임을 나눴다
 
-수동으로 고친 설정이 플레이북과 충돌하는지도 확인해야 했다. 공개 글이므로 실제 호스트명, 사설 IP, 계정명, 인증 값은 모두 일반화했다.
+Jenkins가 build와 deploy를 실행하더라도, 서버 내부의 준비 상태까지 pipeline에 넣으면 책임이 섞인다. 반대로 모든 값을 inventory에 적으면 테넌트별 환경값과 비밀값을 함께 관리하기 어려웠다.
 
-## 실험/검증
+따라서 환경값의 기준은 config repository, 서버 준비는 Ansible, 이미지 build/push와 배포 실행은 Jenkins, 서비스 실행 단위는 Docker Compose로 분리했다.
 
-검증 대상은 개인 홈 랩의 신규 워커 노드에 적용하는 기본 프로비저닝 플레이북이다. 역할은 OS 기본 패키지 설치, sysctl 설정, time sync, container runtime 준비, SSH hardening 정도로 제한했다.
+![IDC Demo/PoC 테넌트 런타임과 Core 운영 도구 구조](/images/blog/ansible-provisioning-idempotency/tenant-runtime-provisioning-architecture.png)
 
-첫 실행 후 같은 inventory에 대해 두 번째 실행을 수행하고, `changed=0`이 되는지 확인했다. 이후 의도적으로 sysctl 값 하나와 서비스 enable 상태 하나를 바꾼 뒤 세 번째 실행에서 필요한 항목만 복구되는지 봤다.
+*IDC Demo/PoC 구성에서 테넌트 runtime과 Core 운영 도구의 책임을 단순화한 그림입니다. 고객·서버·네트워크 식별 정보와 세부 전달 경로는 제외했습니다.*
 
-검증 기준은 단순했다.
+```mermaid
+flowchart LR
+  C["Config repository\nnon-secret 환경·대상 기준"] --> J["Jenkins\nbuild / push / deploy"]
+  A["Ansible\nserver provisioning"] --> T["Tenant server"]
+  J --> T
+  T --> D["Docker Compose\nruntime services"]
+  V["Secret manager"] -. "runtime secret" .-> T
+```
 
-- 첫 실행은 필요한 항목만 변경한다.
-- 두 번째 실행은 변경 없음 상태가 된다.
-- drift 주입 후 실행은 drift 항목만 변경한다.
-- 인증 값, 개인 도메인, 실제 노드 식별자는 로그와 문서에 남기지 않는다.
+Ansible 쪽은 다시 다음 역할로 쪼갰다.
 
-## 결과
+| 역할 | 준비하는 상태 |
+| --- | --- |
+| `common` | 환경 설정 로드, 대상 서버 동적 등록 |
+| `tenant_host` | Docker/Compose, 실행 계정, 서비스 디렉터리, `.env` seed, 로그 경로 |
+| `pg` | PostgreSQL 17, DB/schema/user/extension/grant, Liquibase 실행 조건 |
+| `tenant_stack` | Compose 파일·runtime secret mount·서비스 기동 조건 |
+| `monitoring` | collector/exporter가 붙을 수 있는 runtime 조건 |
 
-패키지 설치와 서비스 enable 작업은 대부분 idempotent하게 동작했다. 반면 파일 템플릿 일부는 trailing newline과 권한 값이 매번 달라져 반복 실행마다 `changed`가 발생했다.
+Ansible role은 관련 task·variable·template을 정해진 구조로 묶어 재사용할 수 있다. 이 구조를 사용한 이유도 “역할별 상태를 따로 재실행하고 검증할 수 있게” 만들기 위해서였다. [Ansible Roles 문서](https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_reuse_roles.html)도 role을 관련 task, vars, files, handlers를 재사용 가능한 단위로 묶는 방식으로 설명한다.
 
-가장 효과가 컸던 수정은 템플릿 결과를 고정하고, command/shell task를 모듈 task로 바꾸는 것이었다. 예를 들어 직접 명령으로 서비스를 켜는 대신 `ansible.builtin.systemd`를 사용하니 결과가 안정됐다.
+## `changed=0`만 목표로 두면 놓치는 것
 
-두 번째 실행에서 `changed=0`에 가까워지자 이후 운영 로그 해석이 쉬워졌다. 변경이 발생하면 실제 drift인지, 플레이북이 아직 idempotent하지 않은지 좁혀 볼 수 있었다.
+처음에는 두 번째 실행에서 `changed=0`이 나와야 좋은 playbook이라고 생각했다. 하지만 changed는 원격 서버의 실제 drift만 뜻하지 않는다.
 
-## 한계
+- control node의 `add_host`는 runtime inventory에 대상을 등록하는 작업이다. changed로 표시돼도 원격 서버 상태가 바뀐 것은 아니다.
+- 선언한 database setting을 다시 적용하는 task는 현재 값 비교 방식에 따라 changed로 남을 수 있다.
+- 비밀번호처럼 매 실행마다 새 값을 생성하는 task는 실제 비수렴이다. “의도된 changed”라고 넘기지 않고 ownership과 생성 조건을 다시 확인해야 한다.
 
-홈 랩 규모의 검증이라 OS 이미지 종류와 하드웨어 조합이 제한적이다. 네트워크 불안정, mirror 장애, 패키지 저장소 갱신처럼 외부 상태가 바뀌는 상황은 충분히 재현하지 못했다.
+여기서 말하는 **drift**는 사람이 수동으로 바꾸거나 외부 변경으로 인해 실제 서버 상태가 playbook이 선언한 상태와 달라진 경우다. changed가 남았다는 사실 하나만으로 drift라고 단정할 수 없고, task별 원인을 봐야 했다.
 
-또한 idempotency가 곧 안전한 변경을 의미하지는 않는다. 같은 결과를 반복해서 만든다는 것과 그 결과가 운영에 적절하다는 것은 별개다.
+## disposable 서버에서 재실행 결과를 확인했다
 
-## 다음 개선
+검증에서는 같은 commit과 config로 bootstrap을 다시 실행하고, 이어서 stack을 재실행했다. PostgreSQL 17은 대상 서버에 이미 설치된 상태였으므로 cluster 재설치가 아니라 tenant DB/schema/user/grant와 runtime secret 경계를 중심으로 확인했다.
 
-다음 단계는 Molecule 또는 임시 VM 기반 검증을 붙여 PR 단위로 idempotency를 확인하는 것이다. 홈 Kubernetes 노드에 직접 적용하기 전에 테스트 inventory에서 두 번 실행하고, 두 번째 실행의 changed 수를 CI 결과로 남길 계획이다.
+| 실행 | 결과 | 해석 |
+| --- | --- | --- |
+| Bootstrap 재실행 | `changed=1`, `failed=0`, `unreachable=0` | 남은 변경은 database default `search_path` 재적용 task로 분류 |
+| Stack 재실행 | `changed=0`, `failed=0`, `unreachable=0` | health task를 제외한 Compose/runtime secret 준비 상태 수렴 확인 |
+| Check mode | `changed=1`, `failed=0`, `unreachable=0` | 실제 적용 전 예상 변경 확인. 실행 성공을 대체하지는 않음 |
 
-장기적으로는 task 작성 패턴과 검증 결과를 나눠서 남길 생각이다. 글에서는 “Ansible이 항상 멱등적이다”가 아니라 “멱등적인 모듈을 우선 쓰고, command/shell은 조건을 명시해야 한다”는 기준을 계속 확인하려고 한다.
+즉, “두 번째 실행이 조용했다”가 결론이 아니었다. 남은 `changed=1`이 무엇인지 확인하고, 그것이 실제 원격 서버 drift인지 재적용 task의 보고 특성인지 구분하는 것이 더 중요했다.
+
+```mermaid
+flowchart TB
+  R["같은 commit / config 재실행"] --> C{"changed 발생?"}
+  C -->|없음| S["수렴 확인"]
+  C -->|있음| D{"원격 상태 변경인가?"}
+  D -->|아님| I["control-node 작업·reporting 특성 분리"]
+  D -->|맞음| E{"의도한 재적용인가?"}
+  E -->|예| V["설정 비교·검증 기준 보완"]
+  E -->|아니오| F["비수렴 task로 분류 후 수정"]
+```
+
+## Check mode는 사전 확인이지 실행 결과가 아니다
+
+`--check --diff`는 실제 변경 없이 예상 변경을 보는 데 유용했다. 특히 template, file, package, service처럼 선언형 모듈을 사용한 task의 변경 예상과 diff를 확인하기 좋았다.
+
+다만 check mode는 simulation이다. 공식 문서도 지원하지 않는 module은 아무것도 보고하지 않거나 실행하지 않으며, 이전 task의 registered variable에 의존하는 조건부 task는 충분한 출력을 만들지 못할 수 있다고 설명한다. 그래서 command/shell, runtime health, Compose 기동처럼 실제 상태에 의존하는 영역은 check mode만으로 통과 판정을 내리지 않았다. [Ansible check mode / diff mode 문서](https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_checkmode.html)
+
+내 기준은 세 단계가 함께 있어야 한다.
+
+1. `--check --diff`로 선언형 변경의 예상 범위를 먼저 확인한다.
+2. disposable 서버에 실제 적용해 task failure와 원격 상태를 확인한다.
+3. 같은 commit/config로 재실행해 남은 changed를 분류하고, runtime health를 별도로 확인한다.
+
+## 이 경험에서 남긴 기준
+
+Ansible을 도입한 이유는 YAML을 쓰기 위해서가 아니었다. 테넌트 서버의 Docker, 디렉터리, DB 권한, secret runtime boundary처럼 서로 다른 상태를 한 번의 shell script에 감추지 않고, 역할별로 재실행·부분 실행·검증할 수 있게 만들기 위해서였다.
+
+`changed=0`은 좋은 신호일 수 있지만 목표 그 자체는 아니다. 재실행 결과에서 **무엇이 바뀌었고, 왜 바뀌었으며, 다음에는 어떤 상태를 보장할지 설명할 수 있는가**를 provisioning 검증 기준으로 남겼다.
+
+## 참고 자료
+
+- [Ansible: Roles](https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_reuse_roles.html)
+- [Ansible: Validating tasks with check mode and diff mode](https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_checkmode.html)
+- [Jenkins CI/CD가 느릴 때, executor부터 늘리지 않고 계측부터 한 이유](/blog/jenkins-cicd-measurement-docker-optimization-case-study/)
