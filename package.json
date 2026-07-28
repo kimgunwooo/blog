@@ -5,12 +5,13 @@
   "engines": {
     "node": ">=22.12.0"
   },
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build && pagefind --site dist",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build && pagefind --site dist",
+		"preview": "astro preview",
+		"notify:indexnow": "node scripts/notify-indexnow.mjs",
+		"astro": "astro"
+	},
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",
     "@astrojs/rss": "^4.0.19",
