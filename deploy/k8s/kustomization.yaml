@@ -7,4 +7,4 @@ resources:
   - service.yaml
 images:
   - name: ghcr.io/kimgunwooo/platform-ops-log
-    newTag: git-386a885690b7
+    newTag: git-67334288cc96
