@@ -7,9 +7,11 @@ import FormattedDate from '../components/FormattedDate.astro';
 import GlobalSidebar from '../components/GlobalSidebar.astro';
 import Header from '../components/Header.astro';
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<'blog'>['data'] & {
+	relatedPosts?: CollectionEntry<'blog'>[];
+};
 
-const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, tags = [], relatedPosts = [] } = Astro.props;
 ---
 
 <html lang="ko">
@@ -46,6 +48,24 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 				margin: 0 auto;
 				border-radius: 12px;
 				box-shadow: var(--box-shadow);
+			}
+			.reading-progress {
+				position: fixed;
+				top: 0;
+				left: 0;
+				z-index: 1100;
+				width: 100%;
+				height: 3px;
+				pointer-events: none;
+			}
+			.reading-progress__bar {
+				display: block;
+				width: 100%;
+				height: 100%;
+				background: var(--accent);
+				transform: scaleX(0);
+				transform-origin: left center;
+				transition: transform 80ms linear;
 			}
 			.prose {
 				width: 100%;
@@ -202,6 +222,161 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 				font-size: 0.9em;
 				font-weight: 700;
 			}
+			.prose :global(.code-block) {
+				position: relative;
+				padding-top: 3.25rem;
+			}
+			.prose :global(.code-copy) {
+				position: absolute;
+				top: 0.65rem;
+				right: 0.65rem;
+				display: grid;
+				place-items: center;
+				width: 2rem;
+				height: 2rem;
+				padding: 0;
+				border: 1px solid rgba(148, 163, 184, 0.45);
+				border-radius: 7px;
+				background: rgba(15, 23, 42, 0.78);
+				color: #e2e8f0;
+				cursor: pointer;
+				transition:
+					background-color 160ms ease,
+					color 160ms ease;
+			}
+			.prose :global(.code-copy:hover),
+			.prose :global(.code-copy[data-copied='true']) {
+				background: #eef6ff;
+				color: var(--accent);
+			}
+			.prose :global(.code-copy svg) {
+				width: 1rem;
+				height: 1rem;
+			}
+			.prose :global(.image-zoom-frame) {
+				position: relative;
+				margin: 1.75rem 0 2.25rem;
+			}
+			.prose :global(.image-zoom-frame > img) {
+				display: block;
+				width: 100%;
+				margin: 0;
+				cursor: zoom-in;
+			}
+			.prose :global(.image-zoom-button) {
+				position: absolute;
+				top: 0.65rem;
+				right: 0.65rem;
+				display: grid;
+				place-items: center;
+				width: 2.15rem;
+				height: 2.15rem;
+				padding: 0;
+				border: 1px solid rgb(var(--line));
+				border-radius: 8px;
+				background: rgba(255, 255, 255, 0.94);
+				color: rgb(var(--muted));
+				cursor: zoom-in;
+				box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+				transition:
+					background-color 160ms ease,
+					color 160ms ease,
+					transform 160ms ease;
+			}
+			.prose :global(.image-zoom-button:hover) {
+				background: #eef6ff;
+				color: var(--accent);
+				transform: translateY(-1px);
+			}
+			.prose :global(.image-zoom-button svg) {
+				width: 1rem;
+				height: 1rem;
+			}
+			:global(.image-modal) {
+				width: min(96vw, 1500px);
+				max-width: none;
+				height: min(92vh, 1000px);
+				max-height: none;
+				padding: 1rem;
+				border: 1px solid rgba(255, 255, 255, 0.24);
+				border-radius: 14px;
+				background: #fff;
+				overflow: auto;
+			}
+			:global(.image-modal::backdrop) {
+				background: rgba(15, 23, 42, 0.72);
+				backdrop-filter: blur(5px);
+			}
+			:global(.image-modal__close) {
+				position: fixed;
+				top: 1rem;
+				right: 1rem;
+				z-index: 1;
+				width: 2.25rem;
+				height: 2.25rem;
+				border: 1px solid rgba(255, 255, 255, 0.28);
+				border-radius: 10px;
+				background: rgba(255, 255, 255, 0.95);
+				color: rgb(var(--gray-dark));
+				font-size: 1.25rem;
+				line-height: 1;
+				cursor: pointer;
+			}
+			:global(.image-modal__content) {
+				display: grid;
+				min-width: 100%;
+				min-height: 100%;
+				place-items: center;
+			}
+			:global(.image-modal__content img) {
+				display: block;
+				max-width: none;
+				max-height: none;
+				border-radius: 8px;
+			}
+			.related-posts {
+				margin-top: 4rem;
+				padding-top: 1.5rem;
+				border-top: 2px solid var(--accent);
+			}
+			.related-posts__eyebrow {
+				margin: 0 0 0.25rem;
+				color: var(--accent);
+				font-size: 0.75rem;
+				font-weight: 800;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+			.related-posts h2 {
+				margin: 0 0 0.8rem;
+				font-size: 1.25rem;
+			}
+			.related-posts__list {
+				display: grid;
+				border-top: 1px solid rgb(var(--line));
+			}
+			.related-posts__item {
+				display: grid;
+				gap: 0.2rem;
+				padding: 0.9rem 0;
+				border-bottom: 1px solid rgb(var(--line));
+				color: inherit;
+				text-decoration: none;
+			}
+			.related-posts__item:hover strong {
+				color: var(--accent);
+			}
+			.related-posts__meta,
+			.related-posts__description {
+				color: rgb(var(--muted));
+				font-size: 0.82rem;
+				line-height: 1.5;
+			}
+			.related-posts__item strong {
+				color: rgb(var(--black));
+				font-size: 0.98rem;
+				transition: color 160ms ease;
+			}
 			.prose :global(.mermaid-frame) {
 				position: relative;
 				margin: 1.75rem 0 2.25rem;
@@ -345,6 +520,14 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 				max-height: none;
 			}
 			@media (max-width: 720px) {
+				:global(.image-modal) {
+					width: 94vw;
+					height: 82vh;
+					padding: 0.75rem;
+				}
+				:global(.image-modal__content img) {
+					max-width: none;
+				}
 				:global(.diagram-modal) {
 					padding: 1rem;
 				}
@@ -380,6 +563,9 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 	</head>
 
 	<body>
+		<div class="reading-progress" aria-hidden="true">
+			<span class="reading-progress__bar" data-reading-progress></span>
+		</div>
 		<Header />
 		<div class="site-layout post-layout">
 			<GlobalSidebar />
@@ -414,6 +600,28 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 								}
 							</div>
 							<slot />
+							{
+								relatedPosts.length > 0 && (
+									<section class="related-posts" data-toc-ignore aria-labelledby="related-posts-title">
+										<p class="related-posts__eyebrow">Related notes</p>
+										<h2 id="related-posts-title">같이 보면 좋은 글</h2>
+										<div class="related-posts__list">
+											{relatedPosts.map((relatedPost) => (
+												<a class="related-posts__item" href={`/blog/${relatedPost.id}/`}>
+													<span class="related-posts__meta">
+														{relatedPost.data.category} ·{' '}
+														<FormattedDate date={relatedPost.data.pubDate} />
+													</span>
+													<strong>{relatedPost.data.title}</strong>
+													<span class="related-posts__description">
+														{relatedPost.data.description}
+													</span>
+												</a>
+											))}
+										</div>
+									</section>
+								)
+							}
 						</div>
 					</article>
 					<aside class="post-toc" data-post-toc aria-label="글 목차">
@@ -438,7 +646,7 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 
 			if (prose && toc && tocList) {
 				const headings = [...prose.querySelectorAll('h2, h3')].filter(
-					(heading) => !heading.closest('.title'),
+					(heading) => !heading.closest('.title, [data-toc-ignore]'),
 				);
 				const usedIds = new Set();
 
@@ -501,6 +709,141 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 				if (headings[0]?.id) {
 					setActive(headings[0].id);
 				}
+			}
+
+			const readingProgress = document.querySelector('[data-reading-progress]');
+			const postArticle = document.querySelector('.post-main article');
+			if (readingProgress instanceof HTMLElement && postArticle instanceof HTMLElement) {
+				const updateReadingProgress = () => {
+					const articleTop = postArticle.getBoundingClientRect().top + window.scrollY;
+					const readableHeight = Math.max(postArticle.offsetHeight - window.innerHeight, 1);
+					const progress = Math.min(
+						Math.max((window.scrollY - articleTop) / readableHeight, 0),
+						1,
+					);
+					readingProgress.style.transform = `scaleX(${progress})`;
+				};
+				updateReadingProgress();
+				window.addEventListener('scroll', updateReadingProgress, { passive: true });
+				window.addEventListener('resize', updateReadingProgress);
+			}
+
+			const copyIcon = `
+				<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="9" y="9" width="11" height="11" rx="2"></rect>
+					<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+				</svg>`;
+			const copiedIcon = `
+				<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="m5 12 4 4L19 6"></path>
+				</svg>`;
+			const writeClipboard = async (text) => {
+				try {
+					if (navigator.clipboard?.writeText) {
+						await navigator.clipboard.writeText(text);
+						return;
+					}
+				} catch {
+					// Local or embedded previews can deny Clipboard API access.
+				}
+				const textarea = document.createElement('textarea');
+				textarea.value = text;
+				textarea.style.position = 'fixed';
+				textarea.style.opacity = '0';
+				document.body.append(textarea);
+				textarea.select();
+				document.execCommand('copy');
+				textarea.remove();
+			};
+			if (prose) {
+				[...prose.querySelectorAll('pre')]
+					.filter(
+						(pre) =>
+							!pre.matches('[data-language="mermaid"]') &&
+							!pre.querySelector('code.language-mermaid'),
+					)
+					.forEach((pre) => {
+						const code = pre.querySelector('code');
+						if (!code) {
+							return;
+						}
+						pre.classList.add('code-block');
+						const button = document.createElement('button');
+						button.className = 'code-copy';
+						button.type = 'button';
+						button.setAttribute('aria-label', '코드 복사');
+						button.title = '코드 복사';
+						button.innerHTML = copyIcon;
+						button.addEventListener('click', async () => {
+							try {
+								await writeClipboard(code.textContent ?? '');
+								button.dataset.copied = 'true';
+								button.setAttribute('aria-label', '복사됨');
+								button.title = '복사됨';
+								button.innerHTML = copiedIcon;
+								window.setTimeout(() => {
+									delete button.dataset.copied;
+									button.setAttribute('aria-label', '코드 복사');
+									button.title = '코드 복사';
+									button.innerHTML = copyIcon;
+								}, 1400);
+							} catch {
+								button.setAttribute('aria-label', '복사 실패');
+								button.title = '복사 실패';
+							}
+						});
+						pre.append(button);
+					});
+			}
+
+			const imageModal = document.createElement('dialog');
+			imageModal.className = 'image-modal';
+			imageModal.innerHTML = `
+				<button class="image-modal__close" type="button" aria-label="이미지 닫기">×</button>
+				<div class="image-modal__content"></div>
+			`;
+			document.body.append(imageModal);
+			const imageModalContent = imageModal.querySelector('.image-modal__content');
+			const closeImageModal = () => imageModal.close();
+			imageModal.querySelector('.image-modal__close')?.addEventListener('click', closeImageModal);
+			imageModal.addEventListener('click', (event) => {
+				if (event.target === imageModal) {
+					closeImageModal();
+				}
+			});
+
+			if (prose) {
+				[...prose.querySelectorAll('p > img')].forEach((image, index) => {
+					const paragraph = image.parentElement;
+					if (!(paragraph instanceof HTMLParagraphElement)) {
+						return;
+					}
+					const frame = document.createElement('figure');
+					frame.className = 'image-zoom-frame';
+					const button = document.createElement('button');
+					button.className = 'image-zoom-button';
+					button.type = 'button';
+					button.setAttribute('aria-label', '이미지 크게 보기');
+					button.title = '이미지 크게 보기';
+					button.innerHTML = `
+						<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M15 3h6v6"></path><path d="M21 3l-7 7"></path>
+							<path d="M9 21H3v-6"></path><path d="M3 21l7-7"></path>
+						</svg>`;
+					const openImageModal = () => {
+						const expandedImage = image.cloneNode(true);
+						expandedImage.removeAttribute('loading');
+						expandedImage.removeAttribute('width');
+						expandedImage.removeAttribute('height');
+						expandedImage.alt = image.alt || `본문 이미지 ${index + 1}`;
+						imageModalContent?.replaceChildren(expandedImage);
+						imageModal.showModal();
+					};
+					button.addEventListener('click', openImageModal);
+					image.addEventListener('click', openImageModal);
+					frame.append(image, button);
+					paragraph.replaceWith(frame);
+				});
 			}
 
 			const mermaidBlocks = [

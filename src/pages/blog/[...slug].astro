@@ -13,8 +13,25 @@ type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
 const { Content } = await render(post);
+const currentTags = new Set(post.data.tags ?? []);
+const relatedPosts = (await getCollection('blog'))
+	.filter((entry) => entry.id !== post.id)
+	.map((entry) => ({
+		entry,
+		sharedTagCount: entry.data.tags.filter((tag) => currentTags.has(tag)).length,
+		sameCategory: entry.data.category === post.data.category,
+	}))
+	.filter(({ sharedTagCount, sameCategory }) => sharedTagCount > 0 || sameCategory)
+	.sort(
+		(a, b) =>
+			b.sharedTagCount - a.sharedTagCount ||
+			Number(b.sameCategory) - Number(a.sameCategory) ||
+			b.entry.data.pubDate.valueOf() - a.entry.data.pubDate.valueOf(),
+	)
+	.slice(0, 3)
+	.map(({ entry }) => entry);
 ---
 
-<BlogPost {...post.data}>
+<BlogPost {...post.data} relatedPosts={relatedPosts}>
 	<Content />
 </BlogPost>
