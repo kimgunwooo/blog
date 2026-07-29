@@ -37,7 +37,7 @@ const {
 					data-tags={post.data.tags.join(' ')}
 				>
 					<div class="post-meta">
-						<FormattedDate date={post.data.pubDate} />
+						<FormattedDate date={post.data.pubDate} showTime={post.data.showTime} />
 						{showCategory && <span class="category-badge">{post.data.category}</span>}
 					</div>
 					<div class="post-body">

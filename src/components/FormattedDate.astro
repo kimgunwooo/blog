@@ -1,17 +1,26 @@
 ---
 interface Props {
 	date: Date;
+	showTime?: boolean;
 }
 
-const { date } = Astro.props;
+const { date, showTime = false } = Astro.props;
 ---
 
 <time datetime={date.toISOString()}>
 	{
-		date.toLocaleDateString('ko-KR', {
+		(showTime ? date.toLocaleString : date.toLocaleDateString).call(date, 'ko-KR', {
 			year: 'numeric',
 			month: '2-digit',
 			day: 'numeric',
+			...(showTime
+				? {
+					hour: '2-digit',
+					minute: '2-digit',
+					second: '2-digit',
+					hour12: false,
+				}
+				: {}),
 		})
 	}
 </time>

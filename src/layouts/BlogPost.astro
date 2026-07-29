@@ -11,7 +11,7 @@ type Props = CollectionEntry<'blog'>['data'] & {
 	relatedPosts?: CollectionEntry<'blog'>[];
 };
 
-const { title, description, pubDate, updatedDate, heroImage, tags = [], relatedPosts = [] } = Astro.props;
+const { title, description, pubDate, updatedDate, showTime = false, heroImage, tags = [], relatedPosts = [] } = Astro.props;
 ---
 
 <html lang="ko">
@@ -222,9 +222,14 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [], relatedP
 				font-size: 0.9em;
 				font-weight: 700;
 			}
-			.prose :global(.code-block) {
+			.prose :global(.code-block-wrap) {
 				position: relative;
-				padding-top: 3.25rem;
+				display: flow-root;
+				margin: 1em 0;
+			}
+			.prose :global(.code-block) {
+				margin: 0;
+				padding-right: 4.5rem;
 			}
 			.prose :global(.code-copy) {
 				position: absolute;
@@ -578,7 +583,7 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [], relatedP
 						<div class="prose" data-pagefind-body>
 							<div class="title">
 								<div class="date">
-									<FormattedDate date={pubDate} />
+									<FormattedDate date={pubDate} showTime={showTime} />
 									{
 										updatedDate && (
 											<div class="last-updated-on">
@@ -610,7 +615,10 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [], relatedP
 												<a class="related-posts__item" href={`/blog/${relatedPost.id}/`}>
 													<span class="related-posts__meta">
 														{relatedPost.data.category} ·{' '}
-														<FormattedDate date={relatedPost.data.pubDate} />
+															<FormattedDate
+																date={relatedPost.data.pubDate}
+																showTime={relatedPost.data.showTime}
+															/>
 													</span>
 													<strong>{relatedPost.data.title}</strong>
 													<span class="related-posts__description">
@@ -792,7 +800,11 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [], relatedP
 								button.title = '복사 실패';
 							}
 						});
-						pre.append(button);
+
+						const wrapper = document.createElement('div');
+						wrapper.className = 'code-block-wrap';
+						pre.parentNode?.insertBefore(wrapper, pre);
+						wrapper.append(pre, button);
 					});
 			}
 
