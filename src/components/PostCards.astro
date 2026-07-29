@@ -1,0 +1,197 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import FormattedDate from './FormattedDate.astro';
+import { getPostThumbnail } from '../utils/post-thumbnail';
+
+interface Props {
+	posts: CollectionEntry<'blog'>[];
+	layout?: 'grid' | 'home';
+	maxTags?: number;
+}
+
+const { posts, layout = 'grid', maxTags = 3 } = Astro.props;
+---
+
+<section class:list={['post-card-list', `post-card-list--${layout}`]} aria-label="글 목록" data-post-list>
+	{posts.map((post) => {
+		const thumbnail = getPostThumbnail(post);
+		const visibleTags = post.data.tags.slice(0, maxTags);
+		const hiddenTagCount = post.data.tags.length - visibleTags.length;
+
+		return (
+			<a
+				class:list={['post-card', { 'has-thumbnail': thumbnail, 'no-thumbnail': !thumbnail }]}
+				href={`/blog/${post.id}/`}
+				data-post-item
+				data-title={post.data.title}
+				data-description={post.data.description}
+				data-category={post.data.category}
+				data-tags={post.data.tags.join(' ')}
+			>
+				{thumbnail && (
+					<div class="post-thumbnail">
+						<img src={thumbnail} alt="" loading="lazy" decoding="async" />
+					</div>
+				)}
+				<div class="post-card-copy">
+					<div class="post-card-meta">
+						<span>{post.data.category}</span>
+						<FormattedDate date={post.data.pubDate} showTime={post.data.showTime} showSeconds={false} />
+					</div>
+					<h2>{post.data.title}</h2>
+					<p class="post-card-description">{post.data.description}</p>
+					{visibleTags.length > 0 && (
+						<div class="post-card-tags" aria-label="태그">
+							{visibleTags.map((tag) => <span>{tag}</span>)}
+							{hiddenTagCount > 0 && <span>+{hiddenTagCount}</span>}
+						</div>
+					)}
+				</div>
+			</a>
+		);
+	})}
+</section>
+
+<style>
+	.post-card-list {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 2.25rem 1.4rem;
+		border-top: 1px solid rgb(var(--line));
+		padding-top: 1.45rem;
+	}
+	.post-card {
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		color: inherit;
+		text-decoration: none;
+	}
+	.post-card[hidden] {
+		display: none;
+	}
+	.post-thumbnail {
+		flex: 0 0 auto;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		margin-bottom: 1rem;
+		background: rgb(var(--surface));
+		border: 1px solid rgb(var(--line));
+		border-radius: 4px;
+	}
+	.post-thumbnail img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 180ms ease;
+	}
+	.post-card:hover .post-thumbnail img {
+		transform: scale(1.025);
+	}
+	.post-card-copy {
+		display: flex;
+		flex-direction: column;
+	}
+	.no-thumbnail .post-card-copy {
+		border-top: 2px solid var(--accent);
+		padding-top: 1rem;
+	}
+	.post-card-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.42rem;
+		align-items: center;
+		margin-bottom: 0.65rem;
+		color: rgb(var(--muted));
+		font-size: 0.76rem;
+		font-weight: 700;
+		line-height: 1.4;
+	}
+	.post-card-meta > span:first-child {
+		color: var(--accent);
+		font-weight: 800;
+	}
+	.post-card-meta > span:first-child::after {
+		content: '·';
+		margin-left: 0.42rem;
+		color: rgb(var(--line));
+	}
+	.post-card h2 {
+		margin: 0 0 0.55rem;
+		font-size: clamp(1.18rem, 1.75vw, 1.52rem);
+		line-height: 1.32;
+	}
+	.post-card-description {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 3;
+		overflow: hidden;
+		margin: 0;
+		color: rgb(var(--muted));
+		line-height: 1.62;
+	}
+	.post-card-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-top: 1rem;
+	}
+	.post-card-tags span {
+		padding: 0.15rem 0.45rem;
+		color: rgb(var(--muted));
+		background: rgb(var(--surface));
+		border: 1px solid rgb(var(--line));
+		border-radius: 999px;
+		font-size: 0.72rem;
+		font-weight: 700;
+	}
+	.post-card:hover h2 {
+		color: var(--accent);
+	}
+	.post-card-list--home .post-card:first-child {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: minmax(0, 1.65fr) minmax(260px, 1fr);
+		gap: 1.65rem;
+		align-items: start;
+		padding-bottom: 2.25rem;
+		border-bottom: 1px solid rgb(var(--line));
+	}
+	.post-card-list--home .post-card:first-child .post-thumbnail {
+		aspect-ratio: 16 / 9;
+		margin: 0;
+	}
+	.post-card-list--home .post-card:first-child .post-card-copy {
+		padding-top: 0.25rem;
+	}
+	.post-card-list--home .post-card:first-child h2 {
+		font-size: clamp(1.65rem, 2.8vw, 2.35rem);
+		line-height: 1.22;
+	}
+	.post-card-list--home .post-card:first-child .post-card-description {
+		-webkit-line-clamp: 4;
+		font-size: 1.03rem;
+	}
+	@media (max-width: 920px) {
+		.post-card-list {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@media (max-width: 720px) {
+		.post-card-list,
+		.post-card-list--home .post-card:first-child {
+			grid-template-columns: 1fr;
+		}
+		.post-card-list {
+			gap: 1.75rem;
+		}
+		.post-card-list--home .post-card:first-child {
+			gap: 1rem;
+			padding-bottom: 1.75rem;
+		}
+		.post-card-list--home .post-card:first-child h2 {
+			font-size: 1.5rem;
+		}
+	}
+</style>

@@ -2,9 +2,10 @@
 interface Props {
 	date: Date;
 	showTime?: boolean;
+	showSeconds?: boolean;
 }
 
-const { date, showTime = false } = Astro.props;
+const { date, showTime = false, showSeconds = true } = Astro.props;
 ---
 
 <time datetime={date.toISOString()}>
@@ -17,7 +18,7 @@ const { date, showTime = false } = Astro.props;
 				? {
 					hour: '2-digit',
 					minute: '2-digit',
-					second: '2-digit',
+					...(showSeconds ? { second: '2-digit' } : {}),
 					hour12: false,
 				}
 				: {}),

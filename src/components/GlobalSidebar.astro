@@ -225,20 +225,47 @@ const currentPath = Astro.url.pathname;
 	@media (max-width: 900px) {
 		.global-sidebar {
 			position: static;
-			display: grid;
-			grid-template-columns: 1fr;
 			max-height: none;
 			overflow: visible;
+			padding: 0;
+		}
+		.global-sidebar section:not(.profile) {
+			display: none;
+		}
+		.global-sidebar .profile {
+			display: grid;
+			grid-template-columns: 88px minmax(0, 1fr);
+			column-gap: 1rem;
 			padding: 0 0 1.25rem;
 			border-bottom: 1px solid rgb(var(--line));
 		}
-		.global-sidebar section {
-			padding: 0.95rem 0;
-		}
 		.avatar {
-			width: 132px;
-			aspect-ratio: 1 / 1;
-			border-radius: 50%;
+			grid-column: 1;
+			grid-row: 1 / span 4;
+			width: 88px;
+			margin: 0;
+			border-radius: 6px;
+		}
+		.profile .overline,
+		.profile h2,
+		.profile p:not(.overline),
+		.profile .icon-links {
+			grid-column: 2;
+		}
+		.profile .overline {
+			margin-bottom: 0.28rem;
+			font-size: 0.68rem;
+		}
+		.profile h2 {
+			margin-bottom: 0.22rem;
+		}
+		.profile p:not(.overline) {
+			margin-bottom: 0.45rem;
+			font-size: 0.82rem;
+			line-height: 1.45;
+		}
+		.profile .icon-links {
+			margin-top: 0;
 		}
 		.recent {
 			display: none;

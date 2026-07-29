@@ -4,7 +4,7 @@ import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import GlobalSidebar from '../../components/GlobalSidebar.astro';
 import Header from '../../components/Header.astro';
-import PostList from '../../components/PostList.astro';
+import PostCards from '../../components/PostCards.astro';
 import { BLOG_CATEGORIES, SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 const posts = (await getCollection('blog')).sort(
@@ -68,10 +68,11 @@ for (const post of posts) {
 					</div>
 					<p class="result-status" data-result-status>{posts.length}개의 글</p>
 				</section>
-				<PostList posts={posts} />
+				<PostCards posts={posts} />
 				<p class="no-results" data-no-results hidden>
 					조건에 맞는 글이 아직 없습니다. 검색어를 줄이거나 다른 토픽을 선택해보세요.
 				</p>
+				<nav class="pagination" data-pagination aria-label="글 목록 페이지"></nav>
 			</main>
 		</div>
 		<Footer />
@@ -87,7 +88,10 @@ for (const post of posts) {
 		const resultStatus = tools.querySelector('[data-result-status]');
 		const postItems = [...document.querySelectorAll('[data-post-item]')];
 		const noResults = document.querySelector('[data-no-results]');
+		const pagination = document.querySelector('[data-pagination]');
+		const perPage = 9;
 		let activeCategory = 'all';
+		let currentPage = Math.max(1, Number(new URLSearchParams(location.search).get('page')) || 1);
 		let pagefindPromise;
 		let searchVersion = 0;
 
@@ -142,33 +146,75 @@ for (const post of posts) {
 			return new Set(urls);
 		};
 
-		const updatePosts = async () => {
+		const updatePageUrl = () => {
+			const url = new URL(location.href);
+			if (currentPage === 1) url.searchParams.delete('page');
+			else url.searchParams.set('page', String(currentPage));
+			history.replaceState(null, '', url);
+		};
+
+		const renderPagination = (pageCount) => {
+			if (!pagination) return;
+			pagination.replaceChildren();
+			pagination.hidden = pageCount <= 1;
+			if (pageCount <= 1) return;
+
+			const createButton = (label, page, { disabled = false, type = 'page' } = {}) => {
+				const button = document.createElement('button');
+				button.type = 'button';
+				button.textContent = label;
+				button.dataset.page = String(page);
+				button.disabled = disabled;
+				button.className = `pagination-button pagination-button--${type}`;
+				if (type !== 'page') button.setAttribute('aria-label', label === '←' ? '이전 페이지' : '다음 페이지');
+				return button;
+			};
+
+			pagination.append(createButton('←', currentPage - 1, { disabled: currentPage === 1, type: 'previous' }));
+			for (let page = 1; page <= pageCount; page += 1) {
+				const button = createButton(String(page), page);
+				button.classList.toggle('active', page === currentPage);
+				button.setAttribute('aria-current', page === currentPage ? 'page' : 'false');
+				pagination.append(button);
+			}
+			pagination.append(createButton('→', currentPage + 1, { disabled: currentPage === pageCount, type: 'next' }));
+		};
+
+		const updatePosts = async ({ resetPage = false, scroll = false } = {}) => {
 			const currentVersion = ++searchVersion;
 			const query = normalize(searchInput?.value ?? '');
 			const pagefindMatches = await getPagefindMatches(query);
 			if (currentVersion !== searchVersion) return;
 
 			const matchedUrls = pagefindMatches ?? getMetadataMatches(query);
-			let visibleCount = 0;
-
-			for (const item of postItems) {
+			const matchingItems = postItems.filter((item) => {
 				const category = item.dataset.category ?? '';
 				const path = normalizePath(item.getAttribute('href') ?? '');
-				const matchesCategory = activeCategory === 'all' || category === activeCategory;
-				const matchesQuery = matchedUrls.has(path);
-				const visible = matchesCategory && matchesQuery;
+				return (activeCategory === 'all' || category === activeCategory) && matchedUrls.has(path);
+			});
+			const pageCount = Math.max(1, Math.ceil(matchingItems.length / perPage));
+			if (resetPage) currentPage = 1;
+			currentPage = Math.min(currentPage, pageCount);
+			const start = (currentPage - 1) * perPage;
+			const visibleItems = new Set(matchingItems.slice(start, start + perPage));
 
-				item.hidden = !visible;
-				item.classList.toggle('is-hidden', !visible);
-				if (visible) visibleCount += 1;
+			for (const item of postItems) {
+				item.hidden = !visibleItems.has(item);
 			}
 
 			if (resultStatus) {
 				const categoryText = activeCategory === 'all' ? '전체' : activeCategory;
-				resultStatus.textContent = `${categoryText} · ${visibleCount}개의 글`;
+				resultStatus.textContent = matchingItems.length
+					? `${categoryText} · ${matchingItems.length}개의 글 · ${currentPage} / ${pageCount} 페이지`
+					: `${categoryText} · 0개의 글`;
 			}
 			if (noResults) {
-				noResults.hidden = visibleCount !== 0;
+				noResults.hidden = matchingItems.length !== 0;
+			}
+			renderPagination(pageCount);
+			updatePageUrl();
+			if (scroll) {
+				resultStatus?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 		};
 
@@ -179,12 +225,18 @@ for (const post of posts) {
 					target.classList.toggle('active', target === button);
 					target.setAttribute('aria-pressed', target === button ? 'true' : 'false');
 				}
-				void updatePosts();
+				void updatePosts({ resetPage: true });
 			});
 		}
 
 		searchInput?.addEventListener('input', () => {
-			void updatePosts();
+			void updatePosts({ resetPage: true });
+		});
+		pagination?.addEventListener('click', (event) => {
+			const button = event.target.closest('button[data-page]');
+			if (!(button instanceof HTMLButtonElement) || button.disabled) return;
+			currentPage = Number(button.dataset.page) || 1;
+			void updatePosts({ scroll: true });
 		});
 		void updatePosts();
 	}
@@ -276,6 +328,7 @@ for (const post of posts) {
 		color: rgb(var(--muted));
 		font-size: 0.86rem;
 		font-weight: 800;
+		scroll-margin-top: 5.5rem;
 	}
 	.no-results {
 		margin: 0;
@@ -284,7 +337,50 @@ for (const post of posts) {
 		border-top: 1px solid rgb(var(--line));
 		border-bottom: 1px solid rgb(var(--line));
 	}
+	.pagination {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		align-items: center;
+		justify-content: center;
+		margin-top: 2.75rem;
+		padding: 1.25rem 0 0.5rem;
+		border-top: 1px solid rgb(var(--line));
+	}
+	.pagination :global(.pagination-button) {
+		display: grid;
+		width: 2.2rem;
+		height: 2.2rem;
+		place-items: center;
+		padding: 0;
+		color: rgb(var(--muted));
+		background: #fff;
+		border: 1px solid rgb(var(--line));
+		border-radius: 3px;
+		font: inherit;
+		font-size: 0.84rem;
+		font-weight: 800;
+		cursor: pointer;
+		transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+	}
+	.pagination :global(.pagination-button--previous),
+	.pagination :global(.pagination-button--next) {
+		font-size: 1rem;
+	}
+	.pagination :global(.pagination-button:hover:not(:disabled)),
+	.pagination :global(.pagination-button.active) {
+		color: #fff;
+		background: var(--accent);
+		border-color: var(--accent);
+	}
+	.pagination :global(.pagination-button:disabled) {
+		cursor: default;
+		opacity: 0.38;
+	}
 	@media (max-width: 720px) {
+		.result-status {
+			scroll-margin-top: 7.25rem;
+		}
 		.search-box {
 			grid-template-columns: 1fr;
 			gap: 0.35rem;

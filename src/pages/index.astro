@@ -4,12 +4,12 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import GlobalSidebar from '../components/GlobalSidebar.astro';
 import Header from '../components/Header.astro';
-import PostList from '../components/PostList.astro';
+import PostCards from '../components/PostCards.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const posts = (await getCollection('blog'))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-	.slice(0, 8);
+	.slice(0, 4);
 ---
 
 <!doctype html>
@@ -60,16 +60,15 @@ const posts = (await getCollection('blog'))
 						</div>
 					</div>
 				</section>
-
-				<section class="section-block">
+				<section class="section-block" id="recent-notes" aria-labelledby="recent-notes-title">
 					<div class="section-heading">
 						<div>
 							<p class="eyebrow">Technical Notes</p>
-							<h2>최근 기록</h2>
+							<h2 id="recent-notes-title">최근 기록</h2>
 						</div>
 						<a class="section-link" href="/blog/">전체 글 보기</a>
 					</div>
-					<PostList posts={posts} />
+					<PostCards posts={posts} layout="home" maxTags={3} />
 				</section>
 			</main>
 		</div>
@@ -155,7 +154,6 @@ const posts = (await getCollection('blog'))
 <style>
 	.hero {
 		padding: 2.25rem 0 2.5rem;
-		border-bottom: 1px solid rgb(var(--line));
 	}
 	.eyebrow,
 	.label {

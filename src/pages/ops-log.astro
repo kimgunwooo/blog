@@ -7,6 +7,16 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const changelog = [
 	{
+		version: 'v0.6',
+		date: '2026.07.29',
+		title: '글 목록 탐색 흐름 정리',
+		items: [
+			'글에 포함된 이미지를 목록 썸네일로 사용하고, 최근 기록의 첫 글을 크게 노출',
+			'전체 글에 검색·토픽 필터와 9개 단위 페이지네이션 추가',
+			'페이지 전환 시 현재 페이지 정보와 새 목록 첫 행으로 이동하도록 모바일 읽기 흐름 보완',
+		],
+	},
+	{
 		version: 'v0.5',
 		date: '2026.07.29',
 		title: '글 읽기와 다이어그램 확인 흐름 개선',
@@ -62,7 +72,7 @@ const changelog = [
 <!doctype html>
 <html lang="ko">
 	<head>
-		<BaseHead title={`Ops Log | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`운영 기록 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
@@ -70,14 +80,14 @@ const changelog = [
 			<GlobalSidebar />
 			<main>
 				<section class="page-title">
-					<p class="eyebrow">Ops Log</p>
-					<h1>블로그 변경 로그</h1>
+					<p class="eyebrow">Blog Operations</p>
+					<h1>블로그 운영 기록</h1>
 					<p>
-						검색, 토픽 구조, 배포 방식처럼 이 블로그 자체에 추가한 기능과 운영 변경을 버전
-						단위로 남깁니다. 장애 원인 분석이나 트러블슈팅은 별도 기술 노트로 분리합니다.
+						검색, 읽기 흐름, 배포 방식처럼 이 블로그 자체를 다듬은 과정을 날짜별로 남깁니다.
+						장애 원인 분석이나 트러블슈팅은 별도 기술 노트로 분리합니다.
 					</p>
 				</section>
-				<section class="timeline" aria-label="변경 로그">
+				<section class="timeline" aria-label="블로그 운영 기록">
 					{
 						changelog.map((item) => (
 							<article class="timeline-item">

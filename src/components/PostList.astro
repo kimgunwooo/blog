@@ -5,6 +5,10 @@ import FormattedDate from './FormattedDate.astro';
 interface Props {
 	posts: CollectionEntry<'blog'>[];
 	showCategory?: boolean;
+	showTime?: boolean;
+	showSeconds?: boolean;
+	maxTags?: number;
+	compact?: boolean;
 	emptyTitle?: string;
 	emptyDescription?: string;
 }
@@ -12,6 +16,10 @@ interface Props {
 const {
 	posts,
 	showCategory = true,
+	showTime,
+	showSeconds = true,
+	maxTags = Number.POSITIVE_INFINITY,
+	compact = false,
 	emptyTitle = '아직 작성 중입니다',
 	emptyDescription = '이 주제는 공부하면서 글을 채워갈 예정입니다.',
 } = Astro.props;
@@ -25,34 +33,44 @@ const {
 			<p>{emptyDescription}</p>
 		</section>
 	) : (
-		<section class="post-list" aria-label="글 목록">
-			{posts.map((post) => (
-				<a
-					class="post-item"
-					href={`/blog/${post.id}/`}
-					data-post-item
-					data-title={post.data.title}
-					data-description={post.data.description}
-					data-category={post.data.category}
-					data-tags={post.data.tags.join(' ')}
-				>
-					<div class="post-meta">
-						<FormattedDate date={post.data.pubDate} showTime={post.data.showTime} />
-						{showCategory && <span class="category-badge">{post.data.category}</span>}
-					</div>
-					<div class="post-body">
-						<h2>{post.data.title}</h2>
-						<p>{post.data.description}</p>
-						{post.data.tags.length > 0 && (
-							<div class="post-tags">
-								{post.data.tags.map((tag) => (
-									<span>{tag}</span>
-								))}
-							</div>
-						)}
-					</div>
-				</a>
-			))}
+		<section class:list={['post-list', { compact }]} aria-label="글 목록">
+			{posts.map((post) => {
+				const visibleTags = post.data.tags.slice(0, maxTags);
+				const hiddenTagCount = post.data.tags.length - visibleTags.length;
+
+				return (
+					<a
+						class="post-item"
+						href={`/blog/${post.id}/`}
+						data-post-item
+						data-title={post.data.title}
+						data-description={post.data.description}
+						data-category={post.data.category}
+						data-tags={post.data.tags.join(' ')}
+					>
+						<div class="post-meta">
+							<FormattedDate
+								date={post.data.pubDate}
+								showTime={showTime ?? post.data.showTime}
+								showSeconds={showSeconds}
+							/>
+							{showCategory && <span class="category-badge">{post.data.category}</span>}
+						</div>
+						<div class="post-body">
+							<h2>{post.data.title}</h2>
+							<p>{post.data.description}</p>
+							{visibleTags.length > 0 && (
+								<div class="post-tags">
+									{visibleTags.map((tag) => (
+										<span>{tag}</span>
+									))}
+									{hiddenTagCount > 0 && <span>+{hiddenTagCount}</span>}
+								</div>
+							)}
+						</div>
+					</a>
+				);
+			})}
 		</section>
 	)
 }
@@ -123,6 +141,12 @@ const {
 	}
 	.post-item:hover h2 {
 		color: var(--accent);
+	}
+	.post-list.compact .post-body p {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
 	}
 	.empty-state {
 		margin-top: 2rem;
