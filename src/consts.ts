@@ -1,6 +1,6 @@
-export const SITE_TITLE = "Gunwoo's Ops Log";
+export const SITE_TITLE = 'DevOps 여정기';
 export const SITE_DESCRIPTION =
-	'Docker, Network, Kubernetes, Cloud, Observability를 이해하고 실험한 내용을 정리하는 기술 블로그입니다.';
+	'운영 문제를 계측하고 재현하며, Docker, Kubernetes, Cloud, Observability를 실험하고 기록하는 기술 블로그입니다.';
 
 export const PROFILE_LINKS = {
 	github: 'https://github.com/kimgunwooo',
