@@ -89,7 +89,7 @@ for (const post of posts) {
 		const postItems = [...document.querySelectorAll('[data-post-item]')];
 		const noResults = document.querySelector('[data-no-results]');
 		const pagination = document.querySelector('[data-pagination]');
-		const perPage = 9;
+		const perPage = 8;
 		let activeCategory = 'all';
 		let currentPage = Math.max(1, Number(new URLSearchParams(location.search).get('page')) || 1);
 		let pagefindPromise;

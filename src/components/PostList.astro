@@ -114,9 +114,13 @@ const {
 		letter-spacing: 0;
 	}
 	.post-body h2 {
+		display: -webkit-box;
 		margin: 0 0 0.45rem;
 		font-size: clamp(1.25rem, 2vw, 1.55rem);
 		line-height: 1.28;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
 	}
 	.post-body p {
 		max-width: 690px;

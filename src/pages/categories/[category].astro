@@ -4,7 +4,7 @@ import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import GlobalSidebar from '../../components/GlobalSidebar.astro';
 import Header from '../../components/Header.astro';
-import PostList from '../../components/PostList.astro';
+import PostCards from '../../components/PostCards.astro';
 import { BLOG_CATEGORIES, SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 export async function getStaticPaths() {
@@ -39,12 +39,7 @@ const posts = (await getCollection('blog'))
 					<span>{posts.length} notes</span>
 					<a href="/blog/">전체 글 보기</a>
 				</div>
-				<PostList
-					posts={posts}
-					showCategory={false}
-					emptyTitle={`${category.label} 글은 아직 준비 중입니다`}
-					emptyDescription="기본 개념부터 작은 실험까지 정리한 뒤 이 토픽에 추가할 예정입니다."
-				/>
+				<PostCards posts={posts} showCategory={false} />
 			</main>
 		</div>
 		<Footer />

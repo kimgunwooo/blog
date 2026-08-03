@@ -7,9 +7,10 @@ interface Props {
 	posts: CollectionEntry<'blog'>[];
 	layout?: 'grid' | 'home';
 	maxTags?: number;
+	showCategory?: boolean;
 }
 
-const { posts, layout = 'grid', maxTags = 3 } = Astro.props;
+const { posts, layout = 'grid', maxTags = 3, showCategory = true } = Astro.props;
 ---
 
 <section class:list={['post-card-list', `post-card-list--${layout}`]} aria-label="글 목록" data-post-list>
@@ -35,7 +36,7 @@ const { posts, layout = 'grid', maxTags = 3 } = Astro.props;
 				)}
 				<div class="post-card-copy">
 					<div class="post-card-meta">
-						<span>{post.data.category}</span>
+						{showCategory && <span>{post.data.category}</span>}
 						<FormattedDate date={post.data.pubDate} showTime={post.data.showTime} showSeconds={false} />
 					</div>
 					<h2>{post.data.title}</h2>
@@ -55,8 +56,8 @@ const { posts, layout = 'grid', maxTags = 3 } = Astro.props;
 <style>
 	.post-card-list {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 2.25rem 1.4rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 2.5rem 1.8rem;
 		border-top: 1px solid rgb(var(--line));
 		padding-top: 1.45rem;
 	}
@@ -118,9 +119,14 @@ const { posts, layout = 'grid', maxTags = 3 } = Astro.props;
 		color: rgb(var(--line));
 	}
 	.post-card h2 {
+		display: -webkit-box;
+		min-height: calc(1.32em * 2);
 		margin: 0 0 0.55rem;
 		font-size: clamp(1.18rem, 1.75vw, 1.52rem);
 		line-height: 1.32;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
 	}
 	.post-card-description {
 		display: -webkit-box;
@@ -166,17 +172,15 @@ const { posts, layout = 'grid', maxTags = 3 } = Astro.props;
 		padding-top: 0.25rem;
 	}
 	.post-card-list--home .post-card:first-child h2 {
+		display: block;
+		min-height: 0;
 		font-size: clamp(1.65rem, 2.8vw, 2.35rem);
 		line-height: 1.22;
+		-webkit-line-clamp: unset;
 	}
 	.post-card-list--home .post-card:first-child .post-card-description {
 		-webkit-line-clamp: 4;
 		font-size: 1.03rem;
-	}
-	@media (max-width: 920px) {
-		.post-card-list {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
 	}
 	@media (max-width: 720px) {
 		.post-card-list,
