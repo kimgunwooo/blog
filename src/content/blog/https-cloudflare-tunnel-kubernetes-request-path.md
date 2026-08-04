@@ -19,15 +19,31 @@ DNS를 확인하면서 `blog.kwl4b.com`이 Cloudflare IP를 돌려준다는 사�
 
 ```mermaid
 flowchart TB
-  URL["https://service.example.com 입력"] --> DNS["DNS\n이름 → IP"]
-  DNS --> Route["OS routing\n기본 gateway · NAT · Internet"]
-  Route --> TLS["TCP + TLS 또는\nQUIC + TLS"]
-  TLS --> Edge["CDN / Load Balancer / Reverse Proxy"]
-  Edge --> Origin["Origin routing"]
-  Origin --> Service["Kubernetes Service"]
-  Service --> Endpoint["Ready Endpoint"]
-  Endpoint --> App["Pod 안의 application process"]
+  subgraph Client["내 PC / Browser"]
+    URL["https://blog.kwl4b.com 입력"] --> DNS["DNS\n도메인 → Cloudflare Edge IP"]
+    DNS --> Route["OS routing (내 PC)\n기본 gateway · NAT · Internet"]
+    Route --> Connect["TCP + TLS 또는\nQUIC + TLS"]
+  end
+
+  subgraph Cloudflare["Cloudflare network\n내 홈서버 밖"]
+    Edge["Cloudflare Edge\npublic TLS 종료"]
+    Origin["Origin routing\nhostname → Tunnel route"]
+    Edge --> Origin
+  end
+
+  subgraph Home["내 홈 네트워크 / RKE2 cluster"]
+    Tunnel["cloudflared Pod\n사전에 열린 outbound Tunnel"]
+    Service["Kubernetes Service"]
+    Endpoint["Ready Endpoint"]
+    App["Pod 안 application process"]
+    Tunnel --> Service --> Endpoint --> App
+  end
+
+  Connect --> Edge
+  Origin -->|"기존 Tunnel로 전달\n여기부터 내 cluster"| Tunnel
 ```
+
+`OS routing`은 **요청을 시작한 내 PC**에서 일어난다. 이 PC가 Cloudflare Edge IP로 나가는 과정이지, 홈서버가 Internet에서 browser connection을 직접 받는 단계가 아니다. 내 환경에서 요청을 처음 전달받는 workload는 `cloudflared` Pod다. 다만 public Internet이 이 Pod로 새 inbound connection을 여는 것은 아니다. `cloudflared`가 먼저 Cloudflare에 연결해 둔 Tunnel 위로 Cloudflare가 요청을 전달한다.
 
 각 단계가 답하는 질문도 다르다.
 
