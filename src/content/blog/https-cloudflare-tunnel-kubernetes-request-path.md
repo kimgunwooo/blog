@@ -7,9 +7,9 @@ showTime: true
 tags: ['https', 'tls', 'cloudflare-tunnel', 'kubernetes', 'service', 'ingress', 'network']
 ---
 
-DNS를 확인하면서 `blog.kwl4b.com`이 Cloudflare IP를 돌려준다는 사실까지는 이해했다. 그런데 다음 질문이 남았다. **그 IP는 홈서버 IP가 아닌데, 브라우저 요청은 어떻게 집의 RKE2 클러스터 안의 애플리케이션까지 도달하는가?**
+DNS를 확인하면서 `blog.kwl4b.com`이 Cloudflare IP를 돌려준다는 사실까지는 이해했다. 그런데 다음 질문이 남았다. **DNS가 IP를 돌려준 뒤, 브라우저 요청은 일반적인 서버나 Kubernetes 애플리케이션에 어떤 경로로 도달하는가?**
 
-답은 DNS 다음에 여러 경계가 이어진다는 데 있다. DNS는 이름을 IP로 바꾸는 단계일 뿐이다. 이후에는 OS routing, HTTPS 연결, edge proxy, Tunnel, Kubernetes Service와 Endpoint 선택이 차례로 일어난다.
+답은 DNS 다음에 여러 경계가 이어진다는 데 있다. DNS는 이름을 IP로 바꾸는 단계일 뿐이다. 이후에는 client OS routing, HTTPS 연결, public entry, reverse proxy 또는 Ingress/Gateway, application 선택이 차례로 일어난다.
 
 앞 글에서 Linux의 NSS와 DNS resolver가 이름을 해석하는 과정을 다뤘다면, 이 글은 **IP를 얻은 뒤부터 HTTP 요청이 앱 process에 도착하기까지**를 다룬다. [NSS·DNS resolver 글](/blog/linux-dns-nss-stub-recursive-resolver-cloudflare-tunnel/)과 이어서 읽으면 좋다.
 
@@ -20,30 +20,91 @@ DNS를 확인하면서 `blog.kwl4b.com`이 Cloudflare IP를 돌려준다는 사�
 ```mermaid
 flowchart TB
   subgraph Client["내 PC / Browser"]
-    URL["https://blog.kwl4b.com 입력"] --> DNS["DNS\n도메인 → Cloudflare Edge IP"]
+    URL["https://service.example.com 입력"] --> DNS["DNS\n도메인 → public IP"]
     DNS --> Route["OS routing (내 PC)\n기본 gateway · NAT · Internet"]
-    Route --> Connect["TCP + TLS 또는\nQUIC + TLS"]
+    Route --> Connect["HTTPS connection\nTCP + TLS 또는 QUIC + TLS\npublic entry까지"]
   end
 
-  subgraph Cloudflare["Cloudflare network\n내 홈서버 밖"]
-    Edge["Cloudflare Edge\npublic TLS 종료"]
-    Origin["Origin routing\nhostname → Tunnel route"]
-    Edge --> Origin
+  Entry["Public entry\nLoad Balancer · Router DNAT · service host"]
+
+  subgraph Server["서비스 호스트\nVM 또는 physical server"]
+    Proxy["Reverse proxy\nNginx · Caddy · Traefik\nTLS 종료"]
+    Network["Docker network"]
+    App["Application container"]
+    Proxy --> Network --> App
   end
 
-  subgraph Home["내 홈 네트워크 / RKE2 cluster"]
-    Tunnel["cloudflared Pod\n사전에 열린 outbound Tunnel"]
-    Service["Kubernetes Service"]
-    Endpoint["Ready Endpoint"]
-    App["Pod 안 application process"]
-    Tunnel --> Service --> Endpoint --> App
-  end
-
-  Connect --> Edge
-  Origin -->|"기존 Tunnel로 전달\n여기부터 내 cluster"| Tunnel
+  Connect --> Entry --> Proxy
 ```
 
-`OS routing`은 **요청을 시작한 내 PC**에서 일어난다. 이 PC가 Cloudflare Edge IP로 나가는 과정이지, 홈서버가 Internet에서 browser connection을 직접 받는 단계가 아니다. 내 환경에서 요청을 처음 전달받는 workload는 `cloudflared` Pod다. 다만 public Internet이 이 Pod로 새 inbound connection을 여는 것은 아니다. `cloudflared`가 먼저 Cloudflare에 연결해 둔 Tunnel 위로 Cloudflare가 요청을 전달한다.
+위 그림은 **Docker container를 공개 서버에서 운영하는 흔한 구성**이다. 외부 요청은 public IP에서 먼저 받아지고, reverse proxy가 TLS를 종료한 뒤 Docker network의 application container로 전달된다. TLS를 application이 직접 종료하는 구성도 가능하지만, 이 글에서는 reverse proxy를 앞에 둔 구성을 기준으로 본다.
+
+Kubernetes에서 public service를 노출할 때는 reverse proxy 자리의 역할을 Ingress controller 또는 Gateway가 맡는 경우가 많다.
+
+```mermaid
+flowchart LR
+  Client["Browser"] --> Entry["Load Balancer 또는\nRouter NAT"]
+  Entry --> Ingress["Ingress controller 또는 Gateway\nTLS · host/path routing"]
+  Ingress --> Service["Kubernetes Service"]
+  Service --> Endpoint["Ready Endpoint"]
+  Endpoint --> Pod["Application Pod"]
+```
+
+이 경우 cluster 안에서 HTTP 요청을 처음 받는 workload는 Ingress controller 또는 Gateway다. 이후 host와 path 규칙으로 Service를 고르고, Service는 Ready Endpoint 중 하나의 Pod로 traffic을 전달한다.
+
+### 큰 경로로 보면: 내 PC에서 public entry를 거쳐 앱까지
+
+앞의 두 그림에서 생략한 ISP와 인터넷 구간까지 넣으면 아래와 같다. 이 그림은 특정 cloud나 home server의 실제 topology가 아니라, **일반적인 public HTTPS 요청이 지나가는 경계**를 설명하는 개념도다.
+
+```mermaid
+flowchart LR
+  subgraph ClientNetwork["내 네트워크"]
+    Browser["Browser"] --> OS["OS routing"]
+    OS --> Gateway["Default gateway\nrouter / NAT"]
+  end
+
+  subgraph Internet["Internet"]
+    ISP["ISP access / core"] --> Transit["Peering / transit\nbackbone"]
+  end
+
+  subgraph ServiceNetwork["서비스 네트워크"]
+    Entry["Public entry\nCDN / Load Balancer / reverse proxy"] --> Origin["Origin routing\ncontainer 또는 Kubernetes Service"]
+    Origin --> App["Application process"]
+  end
+
+  Gateway --> ISP
+  Transit --> Entry
+```
+
+아래 그림은 이 큰 경로 중 **end system과 router가 만나는 구간**만 떼어 낸 자료다. 내 PC에서 보낸 IP datagram은 첫 gateway와 이후 router를 거치며 목적지 network 쪽으로 전달된다. HTTPS, CDN, Ingress처럼 application 쪽에서 추가되는 경계는 이 그림의 범위 밖이다.
+
+<figure style="margin: 2rem 0; text-align: center;">
+  <a href="https://commons.wikimedia.org/wiki/File:Message_flows_and_Routing.svg" target="_blank" rel="noreferrer">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Message_flows_and_Routing.svg" alt="두 end system 사이에서 router가 IP datagram을 전달하는 구조" loading="lazy" style="width: min(100%, 820px); height: auto;" />
+  </a>
+  <figcaption style="margin-top: 0.5rem; text-align: center; font-size: 0.78rem; color: #64748b; line-height: 1.5;">출처: <a href="https://commons.wikimedia.org/wiki/File:Message_flows_and_Routing.svg" target="_blank" rel="noreferrer">Jsoon eu, Message flows and Routing</a> · CC BY-SA 3.0</figcaption>
+</figure>
+
+- 이 그림의 `A → R → B`에서 `A`는 client, `R`은 gateway 또는 internet router, `B`는 public entry 또는 origin network로 볼 수 있다.
+- router는 **IP destination prefix와 routing table**을 보고 다음 hop을 고른다. 따라서 packet은 hop마다 다른 physical network를 건너지만, 최종 IP destination을 향해 계속 전달된다.
+- 실제 HTTPS 요청에서는 이 router 경로 위에 CDN, load balancer, reverse proxy, Kubernetes Ingress 같은 application-level entry가 추가된다. 이들은 단순 router와 달리 connection을 종료하거나 새로운 connection을 만들고 request를 분기할 수 있다.
+
+- Ethernet/Wi-Fi 같은 **L2 frame은 router hop마다 새로 만들어진다.** 내 PC는 첫 hop인 default gateway의 MAC 주소로 frame을 보낸다.
+- **IP packet은 router들이 목적지 prefix를 따라 전달**하며, home/office router의 NAT나 load balancer 같은 경계에서는 source 또는 destination IP·port가 바뀔 수 있다.
+- **TLS는 TLS를 종료하는 지점까지 유효하다.** public entry에서 TLS를 종료하면, entry와 application 사이에는 별도 HTTP 또는 별도 TLS connection이 생긴다.
+
+따라서 “요청이 내 서버에 도착했다”는 말은 먼저 public entry에 도착했다는 뜻일 수 있다. 그 public entry가 reverse proxy인지, load balancer인지, Kubernetes Ingress인지에 따라 이후의 routing 책임이 달라진다.
+
+### Kubernetes 공식 Ingress 그림이 보여 주는 경계
+
+아래는 Kubernetes 공식 문서의 Ingress 그림이다. 외부 HTTP(S) request가 Ingress controller를 거쳐 Service와 Pod로 분기되는 구조를 보여 준다. 이 글의 Mermaid는 요청 경계를 단순화해 설명한 것이고, 아래 그림은 Kubernetes API 관점의 표준 구성을 보조한다.
+
+<figure style="margin: 2rem 0; text-align: center;">
+  <a href="https://kubernetes.io/docs/concepts/services-networking/ingress/" target="_blank" rel="noreferrer">
+    <img src="https://kubernetes.io/docs/images/ingress.svg" alt="외부 트래픽이 Kubernetes Ingress를 거쳐 Service와 Pod로 분기되는 구조" loading="lazy" style="width: min(100%, 760px); height: auto;" />
+  </a>
+  <figcaption style="margin-top: 0.5rem; text-align: center; font-size: 0.78rem; color: #64748b; line-height: 1.5;">출처: <a href="https://kubernetes.io/docs/concepts/services-networking/ingress/" target="_blank" rel="noreferrer">Kubernetes Documentation - Ingress</a> · CC BY 4.0</figcaption>
+</figure>
 
 각 단계가 답하는 질문도 다르다.
 
@@ -52,7 +113,7 @@ flowchart TB
 | DNS | hostname이 어떤 IP로 해석되는가 | `dig`, `getent` |
 | OS route | 내 host는 어느 interface와 gateway로 나가는가 | `ip route get <ip>` |
 | TLS / HTTP | 어느 server와 인증서를 검증하고 HTTP를 교환했는가 | `curl -v`, `openssl s_client` |
-| Edge / Tunnel | public hostname이 어느 origin 경로로 연결되는가 | Cloudflare route, `cloudflared` 상태 |
+| Public entry / proxy | public IP에서 어느 proxy 또는 routing 계층으로 전달되는가 | Load Balancer, router, Nginx/Ingress log |
 | Kubernetes | Service가 어느 Ready Pod를 backend로 쓰는가 | `Service`, `EndpointSlice`, Pod readiness |
 
 따라서 `dig` 성공만으로 “서버가 정상”이라고 말할 수 없다. DNS, 연결, proxy, app을 별도로 확인해야 장애 구간을 좁힐 수 있다.
@@ -81,6 +142,54 @@ $ ip route get <edge-ip>
 
 가정용 network에서는 이 뒤에 공유기의 NAT가 이어지는 경우가 많다. 즉 브라우저는 Cloudflare edge IP를 향해 연결을 시작하고, home router와 ISP를 지나 인터넷으로 나간다. 이 단계는 home server가 public IP를 갖는지와는 별개다.
 
+### 1-1. route는 gateway IP를 고르고, ARP는 gateway MAC을 찾는다
+
+`ip route get`의 `via <default-gateway>`는 **최종 destination이 아니라 첫 next hop의 IP**다. Ethernet이나 Wi-Fi LAN에서 NIC는 IP만으로 frame을 보낼 수 없으므로, OS는 ARP(Address Resolution Protocol)로 그 gateway IP의 MAC 주소를 찾는다. IPv6에서는 같은 역할을 NDP가 한다.
+
+```text
+최종 IP destination: edge IP
+첫 L2 destination: default gateway의 MAC
+```
+
+즉 IP packet과 Ethernet frame은 동시에 존재한다. 아래는 browser data를 밖으로 보낼 때 안쪽부터 바깥쪽으로 감싸는 캡슐화 순서다.
+
+```text
+HTTP request
+  └─ TCP segment
+       └─ IP packet
+            src IP: local IP
+            dst IP: edge IP
+            └─ Ethernet / Wi-Fi frame
+                 src MAC: local NIC
+                 dst MAC: default gateway
+```
+
+내 PC가 gateway MAC을 이미 알고 있는지는 neighbor cache에서 볼 수 있다.
+
+```bash
+ip neigh show <default-gateway>
+```
+
+같은 LAN에서는 switch가 frame의 destination MAC을 보고 gateway가 연결된 port로 전달한다. gateway는 frame의 L2 header를 제거한 뒤 IP destination을 보고 routing table에서 다음 hop을 고른다. 그리고 다음 link에서 전달할 새 L2 frame을 만들어 보낸다.
+
+```mermaid
+flowchart LR
+  PC["PC\nIP: local → edge\nMAC: PC → gateway"] --> Gateway["Default gateway\nL2 제거 · route 조회"]
+  Gateway --> ISP["ISP router\n새 L2 frame 생성"]
+  ISP --> Edge["CDN / public entry\nIP: local → edge"]
+```
+
+MAC 주소는 link마다 바뀌고, IP destination은 보통 edge IP로 유지된다. router는 TCP나 TLS 내용을 해석하지 않고 IP packet을 forwarding한다. IPv4 router는 hop마다 TTL을 줄여 routing loop도 막는다. ARP는 cache된 값을 재사용하므로 packet마다 새로 broadcast하지 않는다.
+
+가정용 router에서는 이 과정에 source NAT/PAT가 함께 일어나는 경우가 많다.
+
+```text
+NAT 전:  local-private-ip:ephemeral-port → edge-ip:443
+NAT 후:  router-public-ip:translated-port → edge-ip:443
+```
+
+router는 이 변환을 connection tracking table에 저장한다. 응답이 `router-public-ip:translated-port`로 돌아오면 원래 client의 private IP와 port로 되돌린다. 단, ISP의 CGNAT가 있으면 router 뒤에서 NAT가 한 번 더 일어날 수 있다.
+
 ### 2. 브라우저는 IP가 아니라 hostname을 포함해 TLS를 협상한다
 
 HTTPS에서는 IP만으로 어떤 사이트를 열지 충분하지 않다. 같은 edge IP에 여러 domain이 연결될 수 있기 때문이다. browser는 TLS `ClientHello`에 **SNI(Server Name Indication)** 로 요청 hostname을 넣고, 지원하는 HTTP protocol도 **ALPN**으로 제안한다.
@@ -88,7 +197,26 @@ HTTPS에서는 IP만으로 어떤 사이트를 열지 충분하지 않다. 같�
 - HTTP/1.1·HTTP/2 경로: 보통 TCP connection을 만든 뒤 TLS handshake를 한다.
 - HTTP/3 경로: QUIC가 UDP 위에서 동작하고 TLS 1.3 handshake가 QUIC 연결 과정에 통합된다.
 
-server는 certificate를 보내고, browser는 인증서 chain, 유효 기간, 그리고 certificate의 SAN에 요청 hostname이 포함되는지를 검증한다. 이 검증에 실패하면 DNS는 정상이더라도 certificate warning이 나타난다. TLS 1.3의 handshake 동작은 [RFC 8446](https://www.rfc-editor.org/rfc/rfc8446), QUIC과 HTTP/3의 관계는 [RFC 9000](https://www.rfc-editor.org/rfc/rfc9000)과 [RFC 9114](https://www.rfc-editor.org/rfc/rfc9114)에 정의돼 있다.
+TCP를 쓰는 HTTP/1.1·HTTP/2 경로에서는 TCP handshake와 TLS handshake가 순서대로 일어난다. 두 handshake의 packet 모두 gateway, ISP, internet router를 거쳐 `edge-ip:443`을 실제로 받고 있는 public entry까지 전달된다. 중간 router는 TCP나 TLS connection의 끝점이 아니다.
+
+```mermaid
+sequenceDiagram
+  participant B as Browser
+  participant E as Public entry / CDN edge
+
+  B->>E: TCP SYN
+  E-->>B: TCP SYN-ACK
+  B->>E: TCP ACK
+  B->>E: TLS ClientHello (SNI=hostname)
+  E-->>B: Certificate + CertificateVerify
+  B->>E: TLS Finished
+  E-->>B: TLS Finished
+  B->>E: Encrypted HTTP request
+```
+
+따라서 browser가 TLS를 맺는 대상은 "최종 application Pod"가 아니라 **public IP의 `:443`에서 TLS를 종료하는 endpoint**다. CDN, load balancer, reverse proxy, Kubernetes Ingress가 그 endpoint가 될 수 있다. server는 certificate를 보내고, browser는 certificate chain, 유효 기간, 그리고 certificate의 SAN에 요청 hostname이 포함되는지를 검증한다. `CertificateVerify`는 endpoint가 certificate의 private key를 실제로 갖고 있음을 보인다. 이 검증에 실패하면 DNS는 정상이더라도 certificate warning이 나타난다.
+
+이후 public entry가 backend로 request를 전달할 때는 별도 HTTP 또는 별도 TCP/TLS connection을 만들 수 있다. 또한 internet에서는 request와 response가 항상 같은 물리 hop을 지난다고 보장되지 않는다. TCP/TLS는 중간 hop 목록이 아니라 양 끝 endpoint의 IP·port와 connection state를 기준으로 유지된다. TLS 1.3의 handshake 동작은 [RFC 8446](https://www.rfc-editor.org/rfc/rfc8446), QUIC과 HTTP/3의 관계는 [RFC 9000](https://www.rfc-editor.org/rfc/rfc9000)과 [RFC 9114](https://www.rfc-editor.org/rfc/rfc9114)에 정의돼 있다.
 
 ### 3. 실제 public endpoint를 `curl`로 분리해 본다
 
@@ -154,6 +282,15 @@ sequenceDiagram
 개인 RKE2 cluster에서는 public hostname의 DNS record가 Cloudflare edge IP를 가리킨다. 그래서 browser의 TCP 또는 QUIC connection은 Cloudflare에서 끝난다. home network에 inbound port를 직접 열어 browser가 접속하는 구조가 아니다.
 
 대신 cluster 안의 `cloudflared`가 Cloudflare로 **outbound connection**을 미리 만든다. Cloudflare Tunnel은 public hostname을 내부 service에 매핑하고, `cloudflared`가 만든 outbound-only connection을 통해 traffic을 origin으로 전달한다. 따라서 home router에 inbound port forwarding을 추가하지 않고도 public application을 노출할 수 있다. [Cloudflare Tunnel 개요](https://developers.cloudflare.com/tunnel/)와 [published application routing 문서](https://developers.cloudflare.com/tunnel/routing/)가 이 구조를 설명한다.
+
+Cloudflare 공식 그림도 이 차이를 잘 보여 준다. browser는 Cloudflare edge에 요청하고, private application 쪽의 `cloudflared`는 먼저 Cloudflare로 outbound connection을 만든다. 따라서 이 그림은 **Cloudflare Tunnel을 쓰는 현재 홈서버 경로의 일반 참조**이며, 아래 Mermaid가 이 글에서 확인한 Kubernetes 쪽 책임 경계를 더 단순하게 표현한다.
+
+<figure style="margin: 2rem 0; text-align: center;">
+  <a href="https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/" target="_blank" rel="noreferrer">
+    <img src="https://developers.cloudflare.com/_astro/handshake.eh3a-Ml1_26dKUX.webp" alt="Cloudflare Tunnel에서 HTTP 요청이 Cloudflare와 cloudflared를 거쳐 private application에 도달하는 구조" loading="lazy" style="width: min(100%, 860px); height: auto;" />
+  </a>
+  <figcaption style="margin-top: 0.5rem; text-align: center; font-size: 0.78rem; color: #64748b; line-height: 1.5;">출처: <a href="https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/" target="_blank" rel="noreferrer">Cloudflare Docs - Cloudflare Tunnel</a> · 공식 문서 그림 외부 참조</figcaption>
+</figure>
 
 ```mermaid
 flowchart TB
@@ -282,6 +419,7 @@ DNS는 첫 관문이고, Cloudflare Tunnel은 public edge와 private cluster를 
 - [이전 글: NSS, DNS resolver, TLS, Cloudflare Tunnel](/blog/linux-dns-nss-stub-recursive-resolver-cloudflare-tunnel/)
 - [Cloudflare Tunnel overview](https://developers.cloudflare.com/tunnel/)
 - [Cloudflare Tunnel routing](https://developers.cloudflare.com/tunnel/routing/)
+- [Wikimedia Commons: Message flows and Routing](https://commons.wikimedia.org/wiki/File:Message_flows_and_Routing.svg)
 - [Kubernetes Services, Load Balancing, and Networking](https://kubernetes.io/docs/concepts/services-networking/)
 - [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
 - [Kubernetes liveness, readiness, and startup probes](https://kubernetes.io/docs/concepts/workloads/pods/probes/)
