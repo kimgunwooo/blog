@@ -7,6 +7,16 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const changelog = [
 	{
+		version: 'v0.7',
+		date: '2026.08.08',
+		title: '전체 페이지 레이아웃 정렬 통일',
+		items: [
+			'홈과 동일하게 Blog, Categories, 운영 기록, 소개, 본문 외곽 콘텐츠를 중앙 정렬',
+			'공통 최대 폭과 좌우 패딩을 적용해 페이지별 여백 통일',
+			'본문 읽기 폭은 유지하고 외곽 레이아웃 기준만 정리',
+		],
+	},
+	{
 		version: 'v0.6',
 		date: '2026.07.29',
 		title: '글 목록 탐색 흐름 정리',
@@ -78,7 +88,7 @@ const changelog = [
 		<Header />
 		<div class="site-layout">
 			<GlobalSidebar />
-			<main>
+			<main class="ops-main">
 				<section class="page-title">
 					<p class="eyebrow">Blog Operations</p>
 					<h1>블로그 운영 기록</h1>

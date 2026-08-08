@@ -13,6 +13,8 @@ DNS를 확인하면서 `blog.kwl4b.com`이 Cloudflare IP를 돌려준다는 사�
 
 앞 글에서 Linux의 NSS와 DNS resolver가 이름을 해석하는 과정을 다뤘다면, 이 글은 **IP를 얻은 뒤부터 HTTP 요청이 앱 process에 도착하기까지**를 다룬다. [NSS·DNS resolver 글](/blog/linux-dns-nss-stub-recursive-resolver-cloudflare-tunnel/)과 이어서 읽으면 좋다.
 
+이 글에서 말하는 `origin routing`의 내부 구조가 궁금하다면 [Docker bridge 네트워크 글](/blog/docker-kubernetes-networking-bridge-service-cni/)에서 한 호스트 안의 `eth0`, `veth`, bridge, gateway 흐름을, [Kubernetes 네트워크 글](/blog/kubernetes-networking-pod-cni-service-ingress/)에서 Pod, CNI, Service, Ingress의 책임 분리를 이어서 볼 수 있다.
+
 ## 먼저 결론: DNS 성공은 앱 도달을 뜻하지 않는다
 
 `dig`가 IP를 정상적으로 돌려줘도 다음 단계 중 하나가 실패하면 화면은 열리지 않는다.

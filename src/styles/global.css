@@ -48,20 +48,25 @@ main {
 	display: grid;
 	grid-template-columns: 220px minmax(0, 1fr);
 	gap: 3rem;
-	width: 1160px;
-	max-width: calc(100% - 2em);
-	margin: auto;
-	padding: 2.5rem 1rem;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: 2.5rem 2rem 2.5rem 1.5rem;
 }
 .site-layout > main {
-	width: auto;
-	max-width: none;
+	width: min(100%, 1180px);
+	max-width: 1180px;
+	justify-self: center;
 	margin: 0;
 	padding: 0;
 	min-width: 0;
 }
 .site-layout > * {
 	min-width: 0;
+}
+.notes-main .page-title h1,
+.ops-main .page-title h1 {
+	font-size: clamp(2.1rem, 3.2vw, 3rem);
 }
 h1,
 h2,
@@ -159,8 +164,13 @@ hr {
 	.site-layout {
 		grid-template-columns: 1fr;
 		gap: 1.5rem;
+		width: 100%;
 		max-width: 100%;
 		padding: 1.25rem 1rem;
+	}
+	.site-layout > main {
+		width: 100%;
+		max-width: none;
 	}
 }
 

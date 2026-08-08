@@ -76,13 +76,21 @@ const currentPath = Astro.url.pathname;
 		max-height: calc(100dvh - 104px);
 		overflow-y: auto;
 		overscroll-behavior: contain;
-		scrollbar-gutter: stable;
 		padding-right: 0.35rem;
 		padding-top: 0.25rem;
 		color: rgb(var(--gray-dark));
 		font-size: 0.92rem;
+		scrollbar-width: none;
 	}
 	.global-sidebar::-webkit-scrollbar {
+		display: none;
+		width: 0;
+	}
+	.global-sidebar.is-scrolling {
+		scrollbar-width: thin;
+	}
+	.global-sidebar.is-scrolling::-webkit-scrollbar {
+		display: block;
 		width: 6px;
 	}
 	.global-sidebar::-webkit-scrollbar-track {
@@ -272,3 +280,21 @@ const currentPath = Astro.url.pathname;
 		}
 	}
 </style>
+
+<script>
+	const sidebar = document.querySelector('.global-sidebar');
+	if (sidebar) {
+		let hideScrollbarTimer;
+		sidebar.addEventListener(
+			'scroll',
+			() => {
+				sidebar.classList.add('is-scrolling');
+				window.clearTimeout(hideScrollbarTimer);
+				hideScrollbarTimer = window.setTimeout(() => {
+					sidebar.classList.remove('is-scrolling');
+				}, 600);
+			},
+			{ passive: true },
+		);
+	}
+</script>
