@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import FormattedDate from './FormattedDate.astro';
+import { CORE_TAGS } from '../consts';
 import { getPostThumbnail } from '../utils/post-thumbnail';
 
 interface Props {
@@ -16,8 +17,7 @@ const { posts, layout = 'grid', maxTags = 3, showCategory = true } = Astro.props
 <section class:list={['post-card-list', `post-card-list--${layout}`]} aria-label="글 목록" data-post-list>
 	{posts.map((post) => {
 		const thumbnail = getPostThumbnail(post);
-		const visibleTags = post.data.tags.slice(0, maxTags);
-		const hiddenTagCount = post.data.tags.length - visibleTags.length;
+		const visibleTags = post.data.tags.filter((tag) => CORE_TAGS.includes(tag)).slice(0, maxTags);
 
 		return (
 			<a
@@ -44,7 +44,6 @@ const { posts, layout = 'grid', maxTags = 3, showCategory = true } = Astro.props
 					{visibleTags.length > 0 && (
 						<div class="post-card-tags" aria-label="태그">
 							{visibleTags.map((tag) => <span>{tag}</span>)}
-							{hiddenTagCount > 0 && <span>+{hiddenTagCount}</span>}
 						</div>
 					)}
 				</div>
@@ -69,7 +68,7 @@ const { posts, layout = 'grid', maxTags = 3, showCategory = true } = Astro.props
 		text-decoration: none;
 	}
 	.post-card[hidden] {
-		display: none;
+		display: none !important;
 	}
 	.post-thumbnail {
 		flex: 0 0 auto;
@@ -140,104 +139,139 @@ const { posts, layout = 'grid', maxTags = 3, showCategory = true } = Astro.props
 	.post-card-tags {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.35rem;
-		margin-top: 1rem;
+		gap: 0.45rem;
+		margin-top: 0.85rem;
 	}
 	.post-card-tags span {
-		padding: 0.15rem 0.45rem;
+		min-height: 30px;
+		padding: 0.35rem 0.7rem;
 		color: rgb(var(--muted));
-		background: rgb(var(--surface));
-		border: 1px solid rgb(var(--line));
+		background: rgba(var(--gray-light), 0.6);
+		border: 0;
 		border-radius: 999px;
-		font-size: 0.72rem;
-		font-weight: 700;
+		font-size: 0.78rem;
+		font-weight: 750;
+		line-height: 1.25;
 	}
 	.post-card:hover h2 {
 		color: var(--accent);
 	}
-	.post-card-list--home .post-card:first-child {
-		grid-column: 1;
-		grid-row: span 3;
-		display: grid;
+	.post-card-list--home {
 		grid-template-columns: 1fr;
-		gap: 1rem;
-		align-items: start;
-		padding-right: 1.25rem;
-		border-right: 1px solid rgb(var(--line));
+		gap: 0;
+		border-top: 0;
+		padding-top: 0;
 	}
-	.post-card-list--home .post-card:first-child .post-thumbnail {
-		aspect-ratio: 16 / 9;
-		margin: 0;
-	}
-	.post-card-list--home .post-card:first-child .post-card-copy {
-		padding-top: 0.25rem;
-	}
-	.post-card-list--home .post-card:first-child h2 {
-		display: block;
-		min-height: 0;
-		font-size: clamp(1.45rem, 2.2vw, 1.9rem);
-		line-height: 1.28;
-		-webkit-line-clamp: unset;
-	}
-	.post-card-list--home .post-card:first-child .post-card-description {
-		-webkit-line-clamp: 3;
-		font-size: 0.94rem;
-	}
-	.post-card-list--home .post-card:not(:first-child) {
+	.post-card-list--home .post-card {
+		position: relative;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 8.75rem;
-		gap: 1rem;
-		align-items: start;
-		padding-bottom: 1.15rem;
-		border-bottom: 1px solid rgb(var(--line));
+		grid-template-columns: minmax(0, 1fr) 13.5rem;
+		gap: 1.5rem;
+		align-items: center;
+		margin: 0 -1rem;
+		padding: 1.55rem 3.25rem 1.55rem 1rem;
+		border-radius: 1.25rem;
+		transition: background-color 160ms ease, transform 160ms ease;
 	}
-	.post-card-list--home .post-card:not(:first-child) .post-thumbnail {
+	.post-card-list--home .post-card::after {
+		position: absolute;
+		top: 50%;
+		right: 1rem;
+		color: rgb(var(--muted));
+		content: '→';
+		transform: translateY(-50%);
+		transition: color 160ms ease, transform 160ms ease;
+	}
+	.post-card-list--home .post-card:hover {
+		background: rgba(var(--gray-light), 0.45);
+	}
+	.post-card-list--home .post-card:hover h2 {
+		color: rgb(var(--black));
+	}
+	.post-card-list--home .post-card:hover::after {
+		color: var(--accent);
+		transform: translate(0.25rem, -50%);
+	}
+	.post-card-list--home .post-thumbnail {
 		grid-column: 2;
 		grid-row: 1;
-		aspect-ratio: 4 / 3;
+		aspect-ratio: 16 / 9;
 		margin: 0;
-		border-radius: 3px;
+		border-radius: 1.2rem;
 	}
-	.post-card-list--home .post-card:not(:first-child) .post-card-copy {
+	.post-card-list--home .post-card-copy {
 		grid-column: 1;
 		grid-row: 1;
 		min-width: 0;
 	}
-	.post-card-list--home .post-card:not(:first-child) h2 {
+	.post-card-list--home .no-thumbnail {
+		grid-template-columns: 1fr;
+	}
+	.post-card-list--home .no-thumbnail .post-card-copy {
+		border-top: 0;
+		padding-top: 0;
+	}
+	.post-card-list--home h2 {
+		order: 1;
 		min-height: 0;
-		margin-bottom: 0.4rem;
-		font-size: 1.04rem;
-		line-height: 1.35;
+		margin-bottom: 0.55rem;
+		font-size: clamp(1.18rem, 1.6vw, 1.5rem);
+		line-height: 1.28;
 	}
-	.post-card-list--home .post-card:not(:first-child) .post-card-description {
-		-webkit-line-clamp: 2;
-		font-size: 0.82rem;
-		line-height: 1.5;
+	.post-card-list--home .post-card-meta {
+		order: 2;
+		margin: 0;
+		font-size: 0.9rem;
 	}
-	.post-card-list--home .post-card:not(:first-child) .post-card-tags {
-		margin-top: 0.65rem;
+	.post-card-list--home .post-card-description {
+		display: none;
+	}
+	.post-card-list--home .post-card-tags {
+		order: 0;
+		gap: 0.85rem;
+		margin: 0 0 0.75rem;
+	}
+	.post-card-list--home .post-card-tags span {
+		min-height: 0;
+		padding: 0;
+		color: rgba(var(--gray), 0.72);
+		background: transparent;
+		border-radius: 0;
+		font-size: 0.9rem;
+		font-weight: 500;
 	}
 	@media (max-width: 720px) {
-		.post-card-list,
-		.post-card-list--home .post-card:first-child {
+		.post-card-list {
 			grid-template-columns: 1fr;
 		}
 		.post-card-list {
 			gap: 1.75rem;
 		}
-		.post-card-list--home .post-card:first-child {
-			grid-row: auto;
+		.post-card-list--home {
+			gap: 0;
+		}
+		.post-card-list--home .post-card {
+			grid-template-columns: minmax(0, 1fr) 6.5rem;
 			gap: 1rem;
-			padding-right: 0;
-			padding-bottom: 1.75rem;
-			border-right: 0;
-			border-bottom: 1px solid rgb(var(--line));
+			margin: 0 -0.5rem;
+			padding: 1.5rem 2.5rem 1.5rem 0.5rem;
 		}
-		.post-card-list--home .post-card:first-child h2 {
-			font-size: 1.5rem;
+		.post-card-list--home .post-card::after {
+			right: 0.5rem;
 		}
-		.post-card-list--home .post-card:not(:first-child) {
-			grid-template-columns: minmax(0, 1fr) 7.25rem;
+		.post-card-list--home .no-thumbnail {
+			grid-template-columns: 1fr;
+		}
+		.post-card-list--home h2 {
+			font-size: 1.1rem;
+		}
+		.post-card-list--home .post-card-tags {
+			gap: 0.55rem;
+			margin-bottom: 0.55rem;
+		}
+		.post-card-list--home .post-card-tags span,
+		.post-card-list--home .post-card-meta {
+			font-size: 0.78rem;
 		}
 	}
 </style>

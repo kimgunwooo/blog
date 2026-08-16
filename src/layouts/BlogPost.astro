@@ -41,7 +41,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 			}
 			.post-shell {
 				display: grid;
-				grid-template-columns: minmax(0, 1fr) 210px;
+				grid-template-columns: minmax(0, 1fr) 260px;
 				gap: 2.5rem;
 				align-items: start;
 				justify-content: center;
@@ -93,6 +93,28 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				border-left: 2px solid rgb(var(--line));
 				overflow-x: hidden;
 				overflow-y: auto;
+				scrollbar-width: none;
+			}
+			.post-toc::-webkit-scrollbar {
+				display: none;
+				width: 0;
+			}
+			.post-toc.is-scrolling {
+				scrollbar-width: thin;
+			}
+			.post-toc.is-scrolling::-webkit-scrollbar {
+				display: block;
+				width: 6px;
+			}
+			.post-toc::-webkit-scrollbar-track {
+				background: transparent;
+			}
+			.post-toc::-webkit-scrollbar-thumb {
+				background: rgba(var(--line), 0.9);
+				border-radius: 999px;
+			}
+			.post-toc::-webkit-scrollbar-thumb:hover {
+				background: rgba(var(--muted), 0.45);
 			}
 			.post-toc.is-visible {
 				display: block;
@@ -737,6 +759,21 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				if (headings[0]?.id) {
 					setActive(headings[0].id);
 				}
+			}
+
+			if (toc instanceof HTMLElement) {
+				let hideTocScrollbarTimer;
+				toc.addEventListener(
+					'scroll',
+					() => {
+						toc.classList.add('is-scrolling');
+						window.clearTimeout(hideTocScrollbarTimer);
+						hideTocScrollbarTimer = window.setTimeout(() => {
+							toc.classList.remove('is-scrolling');
+						}, 600);
+					},
+					{ passive: true },
+				);
 			}
 
 			const readingProgress = document.querySelector('[data-reading-progress]');

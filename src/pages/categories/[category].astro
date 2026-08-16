@@ -39,7 +39,7 @@ const posts = (await getCollection('blog'))
 					<span>{posts.length} notes</span>
 					<a href="/blog/">전체 글 보기</a>
 				</div>
-				<PostCards posts={posts} showCategory={false} />
+				<PostCards posts={posts} layout="home" showCategory={false} />
 			</main>
 		</div>
 		<Footer />

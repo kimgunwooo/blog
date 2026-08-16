@@ -50,3 +50,18 @@ export const BLOG_CATEGORIES = [
 		description: '병목을 찾고 수치로 개선 여부를 확인한 기록을 정리합니다.',
 	},
 ];
+
+export const CORE_TAGS = [
+	'docker',
+	'kubernetes',
+	'network',
+	'observability',
+	'ansible',
+	'terraform',
+	'gitops',
+	'opentelemetry',
+	'prometheus',
+	'grafana',
+	'postgresql',
+	'aws',
+];

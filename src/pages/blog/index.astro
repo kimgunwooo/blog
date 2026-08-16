@@ -5,15 +5,18 @@ import Footer from '../../components/Footer.astro';
 import GlobalSidebar from '../../components/GlobalSidebar.astro';
 import Header from '../../components/Header.astro';
 import PostCards from '../../components/PostCards.astro';
-import { BLOG_CATEGORIES, SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { BLOG_CATEGORIES, CORE_TAGS, SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
-const counts = new Map<string, number>();
+const tagSet = new Set<string>();
 for (const post of posts) {
-	counts.set(post.data.category, (counts.get(post.data.category) ?? 0) + 1);
+	for (const tag of post.data.tags) {
+		tagSet.add(tag);
+	}
 }
+const tags = CORE_TAGS.filter((tag) => tagSet.has(tag));
 ---
 
 <!doctype html>
@@ -23,57 +26,58 @@ for (const post of posts) {
 	</head>
 	<body>
 		<Header />
-		<div class="site-layout">
+		<div class="site-layout notes-page-layout" data-notes-tools aria-label="글 목록과 토픽 필터">
 			<GlobalSidebar />
 			<main class="notes-main">
-				<section class="page-title">
-					<p class="eyebrow">Notes</p>
-					<h1>기술 노트</h1>
-					<p>
-						개념을 외우기보다 직접 막힌 지점, 작은 실험, 운영 중 확인한 기준을 순서대로 남깁니다.
-					</p>
-				</section>
-				<section class="notes-tools" data-notes-tools aria-label="글 검색과 토픽 필터">
-					<div class="search-box">
-						<label for="notes-search">Search</label>
-						<input
-							id="notes-search"
-							type="search"
-							placeholder="Docker, BuildKit, GitOps..."
-							autocomplete="off"
-							data-search-input
-						/>
-					</div>
-					<div class="filter-row" aria-label="토픽 필터">
-						<button
-							class="filter-chip active"
-							type="button"
-							data-category-filter="all"
-							aria-pressed="true"
-						>
-							전체 <span>{posts.length}</span>
-						</button>
-						{
-							BLOG_CATEGORIES.map((category) => (
-								<button
-									class="filter-chip"
-									type="button"
-									data-category-filter={category.label}
-									aria-pressed="false"
-								>
-									{category.label} <span>{counts.get(category.label) ?? 0}</span>
-								</button>
-							))
-						}
-					</div>
+				<nav class="category-nav" aria-label="글 카테고리">
+					<button
+						class="category-tab active"
+						type="button"
+						data-category-filter="all"
+						aria-pressed="true"
+					>
+						전체
+					</button>
+					{
+						BLOG_CATEGORIES.map((category) => (
+							<button
+								class="category-tab"
+								type="button"
+								data-category-filter={category.label}
+								aria-pressed="false"
+							>
+								{category.label}
+							</button>
+						))
+					}
+				</nav>
+				<section class="notes-summary" aria-label="글 목록 요약">
 					<p class="result-status" data-result-status>{posts.length}개의 글</p>
 				</section>
-				<PostCards posts={posts} />
+				<PostCards posts={posts} layout="home" />
 				<p class="no-results" data-no-results hidden>
-					조건에 맞는 글이 아직 없습니다. 검색어를 줄이거나 다른 토픽을 선택해보세요.
+					조건에 맞는 글이 아직 없습니다. 다른 토픽을 선택해보세요.
 				</p>
 				<nav class="pagination" data-pagination aria-label="글 목록 페이지"></nav>
 			</main>
+			<aside class="notes-filter-panel" aria-label="토픽 필터">
+				<p class="eyebrow">Tags</p>
+				<h2>태그</h2>
+				<div class="tag-cloud">
+					{
+						tags.map((tag) => (
+							<button
+								class="tag-chip"
+								type="button"
+								data-tag-filter={tag}
+								aria-pressed="false"
+							>
+								{tag}
+							</button>
+						))
+					}
+				</div>
+			</aside>
 		</div>
 		<Footer />
 	</body>
@@ -83,69 +87,16 @@ for (const post of posts) {
 	const tools = document.querySelector('[data-notes-tools]');
 
 	if (tools) {
-		const searchInput = tools.querySelector('[data-search-input]');
-		const filterButtons = [...tools.querySelectorAll('[data-category-filter]')];
+		const categoryButtons = [...tools.querySelectorAll('[data-category-filter]')];
+		const tagButtons = [...tools.querySelectorAll('[data-tag-filter]')];
 		const resultStatus = tools.querySelector('[data-result-status]');
 		const postItems = [...document.querySelectorAll('[data-post-item]')];
 		const noResults = document.querySelector('[data-no-results]');
 		const pagination = document.querySelector('[data-pagination]');
 		const perPage = 8;
 		let activeCategory = 'all';
+		let activeTag = 'all';
 		let currentPage = Math.max(1, Number(new URLSearchParams(location.search).get('page')) || 1);
-		let pagefindPromise;
-		let searchVersion = 0;
-
-		const normalize = (value) => value.toLowerCase().replace(/\s+/g, ' ').trim();
-
-		const normalizePath = (value) => {
-			try {
-				return new URL(value, location.origin).pathname.replace(/\/$/, '');
-			} catch {
-				return value.replace(/\/$/, '');
-			}
-		};
-
-		const loadPagefind = async () => {
-			if (!pagefindPromise) {
-				pagefindPromise = import(/* @vite-ignore */ '/pagefind/pagefind.js').catch(() => null);
-			}
-			return pagefindPromise;
-		};
-
-		const getMetadataMatches = (query) => {
-			const matches = new Set();
-			for (const item of postItems) {
-				const searchable = normalize(
-					[
-						item.dataset.title,
-						item.dataset.description,
-						item.dataset.category,
-						item.dataset.tags,
-					].join(' '),
-				);
-				if (query.length === 0 || searchable.includes(query)) {
-					matches.add(normalizePath(item.getAttribute('href') ?? ''));
-				}
-			}
-			return matches;
-		};
-
-		const getPagefindMatches = async (query) => {
-			if (query.length === 0) return null;
-
-			const pagefind = await loadPagefind();
-			if (!pagefind?.search) return null;
-
-			const search = await pagefind.search(query);
-			const urls = await Promise.all(
-				search.results.map(async (result) => {
-					const data = await result.data();
-					return normalizePath(data.url);
-				}),
-			);
-			return new Set(urls);
-		};
-
 		const updatePageUrl = () => {
 			const url = new URL(location.href);
 			if (currentPage === 1) url.searchParams.delete('page');
@@ -180,17 +131,14 @@ for (const post of posts) {
 			pagination.append(createButton('→', currentPage + 1, { disabled: currentPage === pageCount, type: 'next' }));
 		};
 
-		const updatePosts = async ({ resetPage = false, scroll = false } = {}) => {
-			const currentVersion = ++searchVersion;
-			const query = normalize(searchInput?.value ?? '');
-			const pagefindMatches = await getPagefindMatches(query);
-			if (currentVersion !== searchVersion) return;
-
-			const matchedUrls = pagefindMatches ?? getMetadataMatches(query);
+		const updatePosts = ({ resetPage = false, scroll = false } = {}) => {
 			const matchingItems = postItems.filter((item) => {
 				const category = item.dataset.category ?? '';
-				const path = normalizePath(item.getAttribute('href') ?? '');
-				return (activeCategory === 'all' || category === activeCategory) && matchedUrls.has(path);
+				const tags = (item.dataset.tags ?? '').split(/\s+/).filter(Boolean);
+				return (
+					(activeCategory === 'all' || category === activeCategory) &&
+					(activeTag === 'all' || tags.includes(activeTag))
+				);
 			});
 			const pageCount = Math.max(1, Math.ceil(matchingItems.length / perPage));
 			if (resetPage) currentPage = 1;
@@ -204,9 +152,10 @@ for (const post of posts) {
 
 			if (resultStatus) {
 				const categoryText = activeCategory === 'all' ? '전체' : activeCategory;
+				const tagText = activeTag === 'all' ? '' : ` · ${activeTag}`;
 				resultStatus.textContent = matchingItems.length
-					? `${categoryText} · ${matchingItems.length}개의 글 · ${currentPage} / ${pageCount} 페이지`
-					: `${categoryText} · 0개의 글`;
+					? `${categoryText}${tagText} · ${matchingItems.length}개의 글 · ${currentPage} / ${pageCount} 페이지`
+					: `${categoryText}${tagText} · 0개의 글`;
 			}
 			if (noResults) {
 				noResults.hidden = matchingItems.length !== 0;
@@ -218,116 +167,143 @@ for (const post of posts) {
 			}
 		};
 
-		for (const button of filterButtons) {
+		for (const button of categoryButtons) {
 			button.addEventListener('click', () => {
 				activeCategory = button.dataset.categoryFilter ?? 'all';
-				for (const target of filterButtons) {
+				for (const target of categoryButtons) {
 					target.classList.toggle('active', target === button);
 					target.setAttribute('aria-pressed', target === button ? 'true' : 'false');
 				}
-				void updatePosts({ resetPage: true });
+				updatePosts({ resetPage: true });
+			});
+		}
+		for (const button of tagButtons) {
+			button.addEventListener('click', () => {
+				activeTag = activeTag === button.dataset.tagFilter ? 'all' : button.dataset.tagFilter ?? 'all';
+				for (const target of tagButtons) {
+					target.classList.toggle('active', target === button && activeTag !== 'all');
+					target.setAttribute('aria-pressed', target === button && activeTag !== 'all' ? 'true' : 'false');
+				}
+				updatePosts({ resetPage: true });
 			});
 		}
 
-		searchInput?.addEventListener('input', () => {
-			void updatePosts({ resetPage: true });
-		});
 		pagination?.addEventListener('click', (event) => {
 			const button = event.target.closest('button[data-page]');
 			if (!(button instanceof HTMLButtonElement) || button.disabled) return;
 			currentPage = Number(button.dataset.page) || 1;
-			void updatePosts({ scroll: true });
+			updatePosts({ scroll: true });
 		});
-		void updatePosts();
+		updatePosts();
 	}
 </script>
 
 <style>
-	.page-title {
-		padding: 2rem 0 1.5rem;
-	}
-	.eyebrow {
-		margin: 0 0 0.75rem;
-		color: var(--accent);
-		font-size: 0.82rem;
-		font-weight: 700;
-		text-transform: uppercase;
-	}
-	.page-title p:last-child {
-		max-width: 680px;
-		color: rgb(var(--muted));
-	}
-	.notes-tools {
-		display: grid;
-		gap: 1rem;
-		padding: 1.25rem 0 1.35rem;
-	}
-	.search-box {
-		display: grid;
-		grid-template-columns: 84px minmax(0, 1fr);
+	.notes-summary {
+		display: flex;
 		align-items: center;
-		gap: 1rem;
-		padding-bottom: 1rem;
+		justify-content: flex-end;
+		min-height: 3.25rem;
+		padding-top: 0.2rem;
 	}
-	.search-box label {
-		color: var(--accent);
-		font-size: 0.82rem;
-		font-weight: 800;
-		text-transform: uppercase;
+	.category-nav {
+		display: flex;
+		flex-wrap: nowrap;
+		gap: 0.65rem;
+		overflow-x: auto;
+		padding: 0.25rem 0 1rem;
+		border-bottom: 1px solid rgb(var(--line));
+		scrollbar-width: none;
 	}
-	.search-box input {
-		width: 100%;
-		padding: 0.75rem 0;
-		color: rgb(var(--black));
+	.category-nav::-webkit-scrollbar {
+		display: none;
+	}
+	.category-tab {
+		position: relative;
+		flex: 0 0 auto;
+		padding: 0.35rem 0;
+		color: rgba(var(--gray), 0.7);
 		background: transparent;
 		border: 0;
-		border-bottom: 1px solid rgba(var(--gray), 0.35);
-		border-radius: 0;
 		font: inherit;
-		outline: none;
-	}
-	.search-box input:focus {
-		border-color: var(--accent);
-	}
-	.filter-row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.45rem;
-	}
-	.filter-chip {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.38rem;
-		min-height: 34px;
-		padding: 0.35rem 0.72rem;
-		color: rgb(var(--muted));
-		background: #fff;
-		border: 1px solid rgb(var(--line));
-		border-radius: 999px;
-		font: inherit;
-		font-size: 0.86rem;
+		font-size: 0.9rem;
 		font-weight: 750;
+		white-space: nowrap;
 		cursor: pointer;
 	}
-	.filter-chip span {
-		color: rgba(var(--gray), 0.8);
-		font-size: 0.78rem;
+	.category-tab::after {
+		position: absolute;
+		right: 0;
+		bottom: -1rem;
+		left: 0;
+		height: 2px;
+		background: transparent;
+		content: '';
 	}
-	.filter-chip:hover,
-	.filter-chip.active {
+	.category-tab:hover,
+	.category-tab.active {
+		color: rgb(var(--black));
+	}
+	.category-tab.active::after {
+		background: var(--accent);
+	}
+	.notes-page-layout {
+		grid-template-columns: 220px minmax(0, 1fr) 220px;
+		column-gap: 1.25rem;
+	}
+	.notes-main {
+		padding-inline: clamp(2rem, 4vw, 5rem);
+	}
+	.notes-filter-panel {
+		position: sticky;
+		top: 112px;
+		align-self: start;
+		max-height: calc(100dvh - 112px);
+		overflow-y: auto;
+		padding: 0.5rem 0 0.5rem;
+		scrollbar-width: none;
+	}
+	.notes-filter-panel::-webkit-scrollbar {
+		display: none;
+	}
+	.notes-filter-panel h2 {
+		margin-bottom: 1rem;
+		font-size: 1.2rem;
+	}
+	.tag-cloud {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		gap: 0.6rem 0.45rem;
+	}
+	.tag-chip {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 38px;
+		padding: 0.42rem 0.78rem;
+		color: rgb(var(--muted));
+		background: rgba(var(--gray-light), 0.6);
+		border: 0;
+		border-radius: 999px;
+		font: inherit;
+		font-size: 0.84rem;
+		font-weight: 750;
+		line-height: 1.25;
+		cursor: pointer;
+	}
+	.tag-chip:hover,
+	.tag-chip.active {
 		color: #fff;
 		background: var(--accent);
-		border-color: var(--accent);
-	}
-	.filter-chip:hover span,
-	.filter-chip.active span {
-		color: rgba(255, 255, 255, 0.78);
 	}
 	.result-status {
 		margin: 0;
 		color: rgb(var(--muted));
-		font-size: 0.86rem;
+		font-size: 0.76rem;
 		font-weight: 800;
+		line-height: 1.4;
+		white-space: nowrap;
 		scroll-margin-top: 5.5rem;
 	}
 	.no-results {
@@ -377,13 +353,35 @@ for (const post of posts) {
 		cursor: default;
 		opacity: 0.38;
 	}
+	@media (max-width: 900px) {
+		.notes-page-layout {
+			grid-template-columns: 1fr;
+		}
+		.notes-main {
+			padding-inline: 0;
+		}
+		.notes-filter-panel {
+			position: static;
+			padding: 1.25rem 0 0;
+			border-top: 1px solid rgb(var(--line));
+			border-left: 0;
+		}
+	}
 	@media (max-width: 720px) {
 		.result-status {
 			scroll-margin-top: 7.25rem;
 		}
-		.search-box {
-			grid-template-columns: 1fr;
-			gap: 0.35rem;
+	}
+	@media (min-width: 901px) and (max-width: 1100px) {
+		.notes-page-layout {
+			grid-template-columns: 180px minmax(0, 1fr);
+		}
+		.notes-filter-panel {
+			grid-column: 2;
+			position: static;
+			padding: 1.25rem 0 0;
+			border-top: 1px solid rgb(var(--line));
+			border-left: 0;
 		}
 	}
 </style>
