@@ -65,6 +65,7 @@ const structuredData = article
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
 <link rel="sitemap" href="/sitemap-index.xml" />
 <link
@@ -79,6 +80,24 @@ const structuredData = article
 <meta name="robots" content="index,follow,max-image-preview:large" />
 <meta name="google-site-verification" content="_I6ufmBAJH7SAFlSjwww5I7p4V6TD6wRIab-ynlLIgY" />
 <meta name="naver-site-verification" content="3774b04b149ca6abbfcacf2844a964c97090488e" />
+
+<script is:inline>
+	(() => {
+		const saved = (() => {
+			try {
+				return localStorage.getItem('theme');
+			} catch {
+				return null;
+			}
+		})();
+		const theme = saved === 'dark' || saved === 'light'
+			? saved
+			: window.matchMedia('(prefers-color-scheme: dark)').matches
+				? 'dark'
+				: 'light';
+		document.documentElement.dataset.theme = theme;
+	})();
+</script>
 
 <Font cssVariable="--font-atkinson" preload />
 

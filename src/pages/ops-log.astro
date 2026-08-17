@@ -7,6 +7,16 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const changelog = [
 	{
+		version: 'v0.8',
+		date: '2026.08.17',
+		title: '블로그 화면과 글 탐색 경험 정리',
+		items: [
+			'사용자 시스템 설정을 기본값으로 반영하고 라이트·다크 모드 전환 추가',
+			'홈 화면에 DNS·TCP/TLS·홈서버·블로그 화면으로 이어지는 요청 흐름 인터랙션 추가',
+			'홈 소개 영역과 최근 기록의 폭, 글 목록·토픽·태그·이미지 확대 기준 통일',
+		],
+	},
+	{
 		version: 'v0.7',
 		date: '2026.08.08',
 		title: '전체 페이지 레이아웃 정렬 통일',
@@ -174,8 +184,8 @@ const changelog = [
 		margin-top: 0.38rem;
 		border: 2px solid var(--accent);
 		border-radius: 999px;
-		background: #fff;
-		box-shadow: 0 0 0 5px #fff;
+		background: rgb(var(--surface-strong));
+		box-shadow: 0 0 0 5px rgb(var(--surface-strong));
 	}
 	.timeline-copy {
 		min-width: 0;

@@ -129,8 +129,8 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 			:global(.post-toc .toc-link) {
 				display: block;
 				margin-left: 0;
-				padding: 0;
-				color: #8b95a1;
+					padding: 0;
+					color: rgb(var(--muted));
 				font-size: 0.78rem;
 				line-height: 1.5;
 				text-decoration: none;
@@ -214,14 +214,14 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				border-collapse: separate;
 				border-spacing: 0;
 				border-radius: 10px;
-				background: #fff;
+				background: rgb(var(--surface-strong));
 				box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
 				font-size: 0.93rem;
 				line-height: 1.55;
 				overflow: hidden;
 			}
 			.prose :global(thead) {
-				background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+				background: rgb(var(--gray-light) / 0.35);
 			}
 			.prose :global(th),
 			.prose :global(td) {
@@ -274,7 +274,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				border: 1px solid rgba(148, 163, 184, 0.45);
 				border-radius: 7px;
 				background: rgba(15, 23, 42, 0.78);
-				color: #e2e8f0;
+				color: rgb(var(--gray-dark));
 				cursor: pointer;
 				transition:
 					background-color 160ms ease,
@@ -282,7 +282,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 			}
 			.prose :global(.code-copy:hover),
 			.prose :global(.code-copy[data-copied='true']) {
-				background: #eef6ff;
+				background: rgb(var(--surface));
 				color: var(--accent);
 			}
 			.prose :global(.code-copy svg) {
@@ -310,7 +310,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				padding: 0;
 				border: 1px solid rgb(var(--line));
 				border-radius: 8px;
-				background: rgba(255, 255, 255, 0.94);
+				background: rgb(var(--surface-strong) / 0.94);
 				color: rgb(var(--muted));
 				cursor: zoom-in;
 				box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
@@ -320,7 +320,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 					transform 160ms ease;
 			}
 			.prose :global(.image-zoom-button:hover) {
-				background: #eef6ff;
+				background: rgb(var(--surface));
 				color: var(--accent);
 				transform: translateY(-1px);
 			}
@@ -329,39 +329,87 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				height: 1rem;
 			}
 			:global(.image-modal) {
+				box-sizing: border-box;
 				width: min(96vw, 1500px);
 				max-width: none;
 				height: min(92vh, 1000px);
 				max-height: none;
-				padding: 1rem;
+				padding: 0;
 				border: 1px solid rgba(255, 255, 255, 0.24);
 				border-radius: 14px;
-				background: #fff;
-				overflow: auto;
+				background: rgb(var(--surface-strong));
+				overflow: hidden;
 			}
 			:global(.image-modal::backdrop) {
 				background: rgba(15, 23, 42, 0.72);
 				backdrop-filter: blur(5px);
 			}
+			:global(.image-modal__bar) {
+				position: absolute;
+				top: 0.75rem;
+				right: 0.75rem;
+				z-index: 2;
+				display: flex;
+				align-items: center;
+				gap: 0.4rem;
+				justify-content: flex-end;
+			}
+			:global(.image-modal__hint) {
+				margin-right: 0.35rem;
+				color: rgb(var(--muted));
+				font-size: 0.75rem;
+			}
+			:global(.image-modal__zoom-button),
 			:global(.image-modal__close) {
-				position: fixed;
-				top: 1rem;
-				right: 1rem;
-				z-index: 1;
 				width: 2.25rem;
 				height: 2.25rem;
 				border: 1px solid rgba(255, 255, 255, 0.28);
 				border-radius: 10px;
-				background: rgba(255, 255, 255, 0.95);
+				background: rgb(var(--surface-strong) / 0.95);
 				color: rgb(var(--gray-dark));
 				font-size: 1.25rem;
 				line-height: 1;
 				cursor: pointer;
 			}
+			:global(.image-modal__zoom-button) {
+				font-weight: 700;
+			}
+			:global(.image-modal__zoom-button--fit) {
+				width: auto;
+				padding: 0 0.7rem;
+				font-size: 0.78rem;
+			}
 			:global(.image-modal__content) {
+				box-sizing: border-box;
+				width: 100%;
+				height: 100%;
+				padding: 1rem;
+				overflow: hidden;
+				scrollbar-width: none;
+				-ms-overflow-style: none;
+				overscroll-behavior: contain;
+				cursor: grab;
+				touch-action: none;
+			}
+			:global(.image-modal__content.is-zoomed) {
+				overflow: auto;
+			}
+			:global(.image-modal__content::-webkit-scrollbar),
+			:global(.diagram-modal__body::-webkit-scrollbar) {
+				width: 0;
+				height: 0;
+			}
+			:global(.image-modal__content.is-panning) {
+				cursor: grabbing;
+				user-select: none;
+			}
+			:global(.image-modal__stage) {
 				display: grid;
+				width: max-content;
 				min-width: 100%;
+				height: max-content;
 				min-height: 100%;
+				box-sizing: border-box;
 				place-items: center;
 			}
 			:global(.image-modal__content img) {
@@ -417,8 +465,8 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				position: relative;
 				margin: 1.75rem 0 2.25rem;
 				background:
-					linear-gradient(180deg, rgba(248, 250, 252, 0.74) 0%, rgba(255, 255, 255, 1) 100%),
-					#fff;
+					linear-gradient(180deg, rgb(var(--surface) / 0.74) 0%, rgb(var(--surface-strong)) 100%),
+					rgb(var(--surface-strong));
 				border: 1px solid rgb(var(--line));
 				border-radius: 14px;
 				box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
@@ -452,7 +500,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				font-size: 0.88rem;
 			}
 			.prose :global(.mermaid .edgeLabel p) {
-				background: rgba(255, 255, 255, 0.92) !important;
+				background: rgb(var(--surface-strong) / 0.92) !important;
 				border: 1px solid rgb(var(--line));
 				border-radius: 6px;
 				padding: 0.08rem 0.28rem;
@@ -470,7 +518,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				height: 2rem;
 				border: 1px solid rgb(var(--line));
 				border-radius: 8px;
-				background: rgba(255, 255, 255, 0.92);
+				background: rgb(var(--surface-strong) / 0.92);
 				color: rgb(var(--muted));
 				font-size: 1rem;
 				line-height: 1;
@@ -482,7 +530,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 					transform 160ms ease;
 			}
 			.prose :global(.mermaid-expand:hover) {
-				background: #eef6ff;
+				background: rgb(var(--surface));
 				color: var(--accent);
 				transform: translateY(-1px);
 			}
@@ -519,7 +567,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				height: 2.25rem;
 				border: 1px solid rgba(255, 255, 255, 0.28);
 				border-radius: 10px;
-				background: rgba(255, 255, 255, 0.95);
+				background: rgb(var(--surface-strong) / 0.95);
 				color: rgb(var(--gray-dark));
 				font-size: 1.25rem;
 				line-height: 1;
@@ -534,16 +582,32 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				font-size: 0.78rem;
 			}
 			:global(.diagram-modal__body) {
+				box-sizing: border-box;
 				width: min(94vw, 1440px);
 				height: min(86vh, 900px);
 				max-height: 86vh;
 				padding: 1rem;
 				border: 1px solid rgba(255, 255, 255, 0.22);
 				border-radius: 16px;
-				background: #fff;
-				overflow: auto;
+				background: rgb(var(--surface-strong));
+				overflow: hidden;
+				scrollbar-width: none;
+				-ms-overflow-style: none;
+				overscroll-behavior: contain;
 				cursor: grab;
 				touch-action: none;
+			}
+			:global(.diagram-modal__body.is-zoomed) {
+				overflow: auto;
+			}
+			:global(.diagram-modal__stage) {
+				display: grid;
+				width: max-content;
+				min-width: 100%;
+				height: max-content;
+				min-height: 100%;
+				box-sizing: border-box;
+				place-items: center;
 			}
 			:global(.diagram-modal__body.is-panning) {
 				cursor: grabbing;
@@ -559,7 +623,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 				:global(.image-modal) {
 					width: 94vw;
 					height: 82vh;
-					padding: 0.75rem;
+					padding: 0;
 				}
 				:global(.image-modal__content img) {
 					max-width: none;
@@ -868,50 +932,222 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 			const imageModal = document.createElement('dialog');
 			imageModal.className = 'image-modal';
 			imageModal.innerHTML = `
-				<button class="image-modal__close" type="button" aria-label="이미지 닫기">×</button>
-				<div class="image-modal__content"></div>
+				<div class="image-modal__bar">
+					<span class="image-modal__hint">Ctrl/⌘ + 휠 또는 버튼으로 확대</span>
+					<button class="image-modal__zoom-button" type="button" data-image-action="zoom-out" aria-label="이미지 축소">−</button>
+					<button class="image-modal__zoom-button image-modal__zoom-button--fit" type="button" data-image-action="fit" aria-label="이미지 화면에 맞추기">맞춤</button>
+					<button class="image-modal__zoom-button" type="button" data-image-action="zoom-in" aria-label="이미지 확대">+</button>
+					<button class="image-modal__zoom-button image-modal__zoom-button--fit" type="button" data-image-action="reset" aria-label="이미지 원래 크기">100%</button>
+					<button class="image-modal__close" type="button" aria-label="이미지 닫기">×</button>
+				</div>
+				<div class="image-modal__content"><div class="image-modal__stage"></div></div>
 			`;
 			document.body.append(imageModal);
 			const imageModalContent = imageModal.querySelector('.image-modal__content');
+			const imageModalStage = imageModal.querySelector('.image-modal__stage');
+			let activeImage = null;
+			let imageBaseWidth = 0;
+			let imageBaseHeight = 0;
+			let imageZoom = 1;
+			let imageFitZoom = 1;
+			let imagePanStart = null;
+			const clampImageZoom = (value) => Math.min(Math.max(value, 0.1), 16);
+			const updateImageZoom = (nextZoom, anchor = null) => {
+				if (!(activeImage instanceof HTMLImageElement) || !imageBaseWidth || !imageBaseHeight) {
+					return;
+				}
+				const contentRect = imageModalContent?.getBoundingClientRect();
+				const anchorX = anchor?.x ?? (contentRect ? contentRect.left + contentRect.width / 2 : 0);
+				const anchorY = anchor?.y ?? (contentRect ? contentRect.top + contentRect.height / 2 : 0);
+				const localX = contentRect ? anchorX - contentRect.left : 0;
+				const localY = contentRect ? anchorY - contentRect.top : 0;
+				const previousZoom = imageZoom;
+				imageZoom = clampImageZoom(nextZoom);
+				imageModalContent?.classList.toggle('is-zoomed', imageZoom > imageFitZoom * 1.01);
+				activeImage.style.width = `${Math.round(imageBaseWidth * imageZoom)}px`;
+				activeImage.style.height = `${Math.round(imageBaseHeight * imageZoom)}px`;
+				if (imageModalContent && contentRect && previousZoom > 0) {
+					const scale = imageZoom / previousZoom;
+					imageModalContent.scrollLeft = (imageModalContent.scrollLeft + localX) * scale - localX;
+					imageModalContent.scrollTop = (imageModalContent.scrollTop + localY) * scale - localY;
+				}
+			};
+			const resizeImageModal = () => {
+				if (!imageBaseWidth || !imageBaseHeight) {
+					return;
+				}
+				const maxWidth = Math.min(window.innerWidth * 0.94, 1500);
+				const maxHeight = Math.min(window.innerHeight * 0.86, 1000);
+				imageModal.style.width = `${maxWidth}px`;
+				imageModal.style.height = `${maxHeight}px`;
+			};
+			const fitImage = () => {
+				if (!(activeImage instanceof HTMLImageElement) || !imageModalContent || !imageBaseWidth || !imageBaseHeight) {
+					return;
+				}
+				const availableWidth = imageModalContent.clientWidth - 32;
+				const availableHeight = imageModalContent.clientHeight - 32;
+				imageFitZoom = clampImageZoom(Math.min(availableWidth / imageBaseWidth, availableHeight / imageBaseHeight));
+				updateImageZoom(imageFitZoom);
+				imageModalContent.scrollTo({ left: 0, top: 0 });
+			};
+			const getImageSize = (image, fallback) => {
+				const naturalWidth = image.naturalWidth || 0;
+				const naturalHeight = image.naturalHeight || 0;
+				if (naturalWidth && naturalHeight) {
+					return { width: naturalWidth, height: naturalHeight };
+				}
+				const rect = image.getBoundingClientRect();
+				return {
+					width: rect.width || fallback.width,
+					height: rect.height || fallback.height,
+				};
+			};
 			const closeImageModal = () => imageModal.close();
+			const resetImageViewer = () => {
+				activeImage = null;
+				imageBaseWidth = 0;
+				imageBaseHeight = 0;
+				imageZoom = 1;
+				imageFitZoom = 1;
+				imagePanStart = null;
+				imageModalContent?.classList.remove('is-panning');
+				imageModalContent?.classList.remove('is-zoomed');
+				imageModalStage?.replaceChildren();
+				imageModal.style.width = '';
+				imageModal.style.height = '';
+			};
 			imageModal.querySelector('.image-modal__close')?.addEventListener('click', closeImageModal);
+			imageModal.addEventListener('close', resetImageViewer);
+			imageModal.querySelector('[data-image-action="zoom-out"]')?.addEventListener('click', () => {
+				updateImageZoom(imageZoom / 1.25);
+			});
+			imageModal.querySelector('[data-image-action="zoom-in"]')?.addEventListener('click', () => {
+				updateImageZoom(imageZoom * 1.25);
+			});
+			imageModal.querySelector('[data-image-action="fit"]')?.addEventListener('click', fitImage);
+			imageModal.querySelector('[data-image-action="reset"]')?.addEventListener('click', () => {
+				updateImageZoom(1);
+			});
 			imageModal.addEventListener('click', (event) => {
 				if (event.target === imageModal) {
 					closeImageModal();
 				}
 			});
-
-			if (prose) {
-				[...prose.querySelectorAll('p > img')].forEach((image, index) => {
-					const paragraph = image.parentElement;
-					if (!(paragraph instanceof HTMLParagraphElement)) {
+			imageModalContent?.addEventListener(
+				'wheel',
+				(event) => {
+					if (!event.ctrlKey && !event.metaKey) {
 						return;
 					}
-					const frame = document.createElement('figure');
-					frame.className = 'image-zoom-frame';
+					event.preventDefault();
+					updateImageZoom(imageZoom * (event.deltaY < 0 ? 1.15 : 1 / 1.15), {
+						x: event.clientX,
+						y: event.clientY,
+					});
+				},
+				{ passive: false },
+			);
+			imageModalContent?.addEventListener('pointerdown', (event) => {
+				if (!(event.target instanceof Element) || !event.target.closest('img')) {
+					return;
+				}
+				imagePanStart = {
+					x: event.clientX,
+					y: event.clientY,
+					left: imageModalContent.scrollLeft,
+					top: imageModalContent.scrollTop,
+				};
+				imageModalContent.classList.add('is-panning');
+				imageModalContent.setPointerCapture(event.pointerId);
+			});
+			imageModalContent?.addEventListener('pointermove', (event) => {
+				if (!imagePanStart || !imageModalContent) {
+					return;
+				}
+				imageModalContent.scrollLeft = imagePanStart.left - (event.clientX - imagePanStart.x);
+				imageModalContent.scrollTop = imagePanStart.top - (event.clientY - imagePanStart.y);
+			});
+			const stopImagePan = (event) => {
+				if (!imagePanStart || !imageModalContent) {
+					return;
+				}
+				imagePanStart = null;
+				imageModalContent.classList.remove('is-panning');
+				if (imageModalContent.hasPointerCapture(event.pointerId)) {
+					imageModalContent.releasePointerCapture(event.pointerId);
+				}
+			};
+			imageModalContent?.addEventListener('pointerup', stopImagePan);
+			imageModalContent?.addEventListener('pointercancel', stopImagePan);
+			window.addEventListener('resize', () => {
+				if (imageModal.open) {
+					resizeImageModal();
+					fitImage();
+				}
+			});
+
+			if (prose) {
+				const expandIcon = `
+					<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M15 3h6v6"></path><path d="M21 3l-7 7"></path>
+						<path d="M9 21H3v-6"></path><path d="M3 21l7-7"></path>
+					</svg>`;
+				const createImageButton = (image, index) => {
 					const button = document.createElement('button');
 					button.className = 'image-zoom-button';
 					button.type = 'button';
 					button.setAttribute('aria-label', '이미지 크게 보기');
 					button.title = '이미지 크게 보기';
-					button.innerHTML = `
-						<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M15 3h6v6"></path><path d="M21 3l-7 7"></path>
-							<path d="M9 21H3v-6"></path><path d="M3 21l7-7"></path>
-						</svg>`;
+					button.innerHTML = expandIcon;
 					const openImageModal = () => {
 						const expandedImage = image.cloneNode(true);
 						expandedImage.removeAttribute('loading');
 						expandedImage.removeAttribute('width');
 						expandedImage.removeAttribute('height');
 						expandedImage.alt = image.alt || `본문 이미지 ${index + 1}`;
-						imageModalContent?.replaceChildren(expandedImage);
+						activeImage = expandedImage;
+						imageZoom = 1;
+						imageModalStage?.replaceChildren(expandedImage);
+						resizeImageModal();
 						imageModal.showModal();
+						requestAnimationFrame(() => {
+							const size = getImageSize(expandedImage, {
+								width: image.clientWidth,
+								height: image.clientHeight,
+							});
+							imageBaseWidth = size.width;
+							imageBaseHeight = size.height;
+							fitImage();
+						});
 					};
-					button.addEventListener('click', openImageModal);
+					button.addEventListener('click', (event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						openImageModal();
+					});
 					image.addEventListener('click', openImageModal);
-					frame.append(image, button);
-					paragraph.replaceWith(frame);
+					return button;
+				};
+
+				[...prose.querySelectorAll('img')].forEach((image, index) => {
+					if (image.closest('.image-zoom-frame')) {
+						return;
+					}
+					let frame = image.closest('figure');
+					if (!(frame instanceof HTMLElement) || frame.closest('.prose') !== prose) {
+						const paragraph = image.parentElement;
+						frame = document.createElement('figure');
+						frame.className = 'image-zoom-frame';
+						if (paragraph instanceof HTMLParagraphElement) {
+							paragraph.replaceWith(frame);
+						} else {
+							image.parentNode?.insertBefore(frame, image);
+						}
+						frame.append(image);
+					}
+					frame.classList.add('image-zoom-frame');
+					frame.append(createImageButton(image, index));
 				});
 			}
 
@@ -1011,24 +1247,38 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 						<button class="diagram-modal__zoom-button diagram-modal__zoom-button--fit" type="button" data-diagram-action="reset" aria-label="다이어그램 원래 크기">100%</button>
 						<button class="diagram-modal__close" type="button" aria-label="다이어그램 닫기">×</button>
 					</div>
-					<div class="diagram-modal__body" role="document"></div>
+					<div class="diagram-modal__body">
+						<div class="diagram-modal__stage" role="document"></div>
+					</div>
 				`;
 				document.body.append(modal);
 
 				const modalBody = modal.querySelector('.diagram-modal__body');
+				const modalStage = modal.querySelector('.diagram-modal__stage');
 				let activeDiagram = null;
 				let baseWidth = 0;
 				let baseHeight = 0;
 				let zoom = 1;
+				let fitZoom = 1;
 				let panStart = null;
-				const clampZoom = (value) => Math.min(Math.max(value, 0.5), 4);
+				const clampZoom = (value) => Math.min(Math.max(value, 0.25), 6);
 				const updateZoom = (nextZoom) => {
 					if (!(activeDiagram instanceof SVGElement) || !baseWidth || !baseHeight) {
 						return;
 					}
 					zoom = clampZoom(nextZoom);
+					modalBody?.classList.toggle('is-zoomed', zoom > fitZoom * 1.01);
 					activeDiagram.style.width = `${Math.round(baseWidth * zoom)}px`;
 					activeDiagram.style.height = `${Math.round(baseHeight * zoom)}px`;
+				};
+				const resizeModal = () => {
+					if (!modalBody || !baseWidth || !baseHeight) {
+						return;
+					}
+					const maxWidth = Math.min(window.innerWidth * 0.94, 1440);
+					const maxHeight = Math.min(window.innerHeight * 0.86, 900);
+					modalBody.style.width = `${maxWidth}px`;
+					modalBody.style.height = `${maxHeight}px`;
 				};
 				const fitDiagram = () => {
 					if (!(activeDiagram instanceof SVGElement) || !modalBody || !baseWidth || !baseHeight) {
@@ -1036,16 +1286,23 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 					}
 					const availableWidth = modalBody.clientWidth - 32;
 					const availableHeight = modalBody.clientHeight - 32;
-					updateZoom(Math.min(availableWidth / baseWidth, availableHeight / baseHeight));
+					fitZoom = clampZoom(Math.min(availableWidth / baseWidth, availableHeight / baseHeight));
+					updateZoom(fitZoom);
 					modalBody.scrollTo({ left: 0, top: 0 });
 				};
 				const closeModal = () => {
 					modal.hidden = true;
-					modalBody?.replaceChildren();
+					modalStage?.replaceChildren();
+					if (modalBody) {
+						modalBody.style.width = '';
+						modalBody.style.height = '';
+						modalBody.classList.remove('is-zoomed');
+					}
 					activeDiagram = null;
 					baseWidth = 0;
 					baseHeight = 0;
 					zoom = 1;
+					fitZoom = 1;
 					document.body.style.overflow = '';
 				};
 				modal.querySelector('.diagram-modal__close')?.addEventListener('click', closeModal);
@@ -1116,6 +1373,12 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 						closeModal();
 					}
 				});
+				window.addEventListener('resize', () => {
+					if (!modal.hidden) {
+						resizeModal();
+						fitDiagram();
+					}
+				});
 
 				document.querySelectorAll('.mermaid-frame').forEach((frame, index) => {
 					const svg = frame.querySelector('.mermaid svg');
@@ -1138,11 +1401,11 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 						baseWidth = viewBox.width || Number.parseFloat(clone.getAttribute('width') ?? '') || svg.clientWidth;
 						baseHeight = viewBox.height || Number.parseFloat(clone.getAttribute('height') ?? '') || svg.clientHeight;
 						zoom = 1;
-						modalBody?.replaceChildren(clone);
+						modalStage?.replaceChildren(clone);
+						resizeModal();
 						modal.hidden = false;
 						document.body.style.overflow = 'hidden';
-						updateZoom(1);
-						modalBody?.scrollTo({ left: 0, top: 0 });
+						requestAnimationFrame(fitDiagram);
 					});
 					frame.append(button);
 				});

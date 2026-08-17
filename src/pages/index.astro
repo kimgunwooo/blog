@@ -10,6 +10,39 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 const posts = (await getCollection('blog'))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
 	.slice(0, 4);
+
+const requestFlow = [
+	{
+		label: '눌렀어요',
+		place: '방문자',
+		technical: 'Browser',
+		detail: '방문자가 글 링크를 누르면 브라우저가 서버를 찾기 시작합니다.',
+	},
+	{
+		label: '주소를 찾았어요',
+		place: 'DNS → IP',
+		technical: 'DNS lookup',
+		detail: '도메인 이름을 실제로 찾아갈 IP 주소로 바꿉니다.',
+	},
+	{
+		label: '연결했어요',
+		place: 'TCP + TLS',
+		technical: 'TCP handshake · TLS',
+		detail: '안전하게 대화할 연결을 만들고, 요청을 보낼 준비를 합니다.',
+	},
+	{
+		label: '도착했어요',
+		place: '홈서버 입구',
+		technical: 'Edge · Tunnel · Ingress',
+		detail: '공개된 입구를 거쳐 외부에 문을 직접 열지 않은 홈서버로 요청이 들어옵니다.',
+	},
+	{
+		label: '보여줘요',
+		place: '블로그 화면',
+		technical: 'Kubernetes · Blog Pod',
+		detail: '홈서버의 블로그가 글을 건네고, 브라우저가 화면에 보여줍니다.',
+	},
+];
 ---
 
 <!doctype html>
@@ -24,11 +57,36 @@ const posts = (await getCollection('blog'))
 			<main class="home-main">
 				<section class="hero" aria-labelledby="home-title">
 					<p class="eyebrow">Platform Engineer · DevOps</p>
-					<h1 id="home-title">운영 문제를 계측하고 재현해,<br />다시 사용할 수 있는 기준으로 남깁니다.</h1>
+					<h1 id="home-title">문제를 직접 재현하고,<br />다음에 바로 쓸 해결법으로 남깁니다.</h1>
 					<p class="hero-description">
 						직접 겪은 장애와 궁금증을 실험하고, 결과뿐 아니라 판단 과정과 한계까지 기록합니다.
 					</p>
-					<p class="hero-note">관측한 문제를 재현하고, 검증한 결과를 기준으로 남깁니다.</p>
+					<section class="request-flow" aria-labelledby="request-flow-title">
+						<div class="request-flow-heading">
+							<div>
+								<p class="eyebrow">방문자의 요청</p>
+								<h2 id="request-flow-title">이 글은 이렇게 도착합니다</h2>
+							</div>
+						</div>
+						<p class="request-flow-intro">링크를 누르면 요청 하나가 주소를 찾고, 연결을 만들고, 홈서버를 거쳐 화면으로 돌아옵니다.</p>
+						<ol class="flow-journey" aria-label="블로그 글 전달 흐름">
+							{requestFlow.map((step, index) => (
+								<li class:list={{ 'is-active': index === 0 }}>
+									<div class="flow-node" data-flow-step={index}>
+										<span class="flow-node-dot" aria-hidden="true"><span>0{index + 1}</span></span>
+										<strong>{step.label}</strong>
+										<span>{step.place}</span>
+									</div>
+								</li>
+							))}
+							<span class="flow-packet" aria-hidden="true"></span>
+						</ol>
+						<div class="flow-detail" aria-live="polite">
+							<div class="flow-detail-status"><span class="flow-pulse" aria-hidden="true"></span><span data-flow-status>눌렀어요</span></div>
+							<p data-flow-detail>{requestFlow[0].detail}</p>
+							<small data-flow-technical>{requestFlow[0].technical}</small>
+						</div>
+					</section>
 				</section>
 				<section class="section-block" id="recent-notes" aria-labelledby="recent-notes-title">
 					<div class="section-heading">
@@ -49,7 +107,8 @@ const posts = (await getCollection('blog'))
 		max-width: 1040px;
 	}
 	.hero {
-		max-width: 780px;
+		width: 100%;
+		max-width: none;
 		padding: 4.5rem 0 3.5rem;
 	}
 	.hero h1 {
@@ -71,12 +130,159 @@ const posts = (await getCollection('blog'))
 		font-weight: 800;
 		letter-spacing: 0;
 	}
-	.hero-note {
-		margin: 1.35rem 0 0;
+	.request-flow {
+		margin-top: 2.75rem;
+		padding: 1.25rem 1.35rem 1.35rem;
+		border: 1px solid rgb(var(--line));
+		border-radius: 1rem;
+		background: rgb(var(--surface));
+	}
+	.request-flow-heading {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+	.request-flow-heading .eyebrow {
+		margin-bottom: 0.35rem;
+	}
+	.request-flow h2 {
+		margin: 0;
+		font-size: 1.35rem;
+	}
+	.request-flow-intro {
+		margin: 0.65rem 0 1.2rem;
+		color: rgb(var(--muted));
+		font-size: 0.88rem;
+		line-height: 1.55;
+	}
+	.flow-journey {
+		position: relative;
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: 0.3rem;
+		margin: 0;
+		padding: 0.15rem 0 0;
+		list-style: none;
+	}
+	.flow-journey::before {
+		position: absolute;
+		top: 1.05rem;
+		right: 10%;
+		left: 10%;
+		height: 1px;
+		background: rgb(var(--line));
+		content: '';
+	}
+	.flow-journey li {
+		position: relative;
+		z-index: 1;
+		min-width: 0;
+	}
+	.flow-node {
+		position: relative;
+		display: flex;
+		width: 100%;
+		min-height: 6.5rem;
+		flex-direction: column;
+		align-items: center;
+		padding: 0;
+		color: rgb(var(--muted));
+		background: transparent;
+		border: 0;
+		font: inherit;
+		text-align: center;
+		transition: color 160ms ease, transform 160ms ease;
+	}
+	.flow-journey li.is-active .flow-node {
 		color: var(--accent);
-		font-size: 0.92rem;
+		outline: none;
+		transform: translateY(-2px);
+	}
+	.flow-node-dot {
+		display: grid;
+		width: 1.8rem;
+		height: 1.8rem;
+		place-items: center;
+		margin-bottom: 0.7rem;
+		border: 1px solid rgb(var(--line));
+		border-radius: 50%;
+		background: rgb(var(--surface-strong));
+		transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+	}
+	.flow-node-dot span {
+		font-size: 0.62rem;
 		font-weight: 800;
-		line-height: 1.6;
+	}
+	.flow-journey li.is-active .flow-node-dot {
+		border-color: var(--accent);
+		background: var(--accent);
+		box-shadow: 0 0 0 5px rgba(23, 74, 124, 0.1);
+		color: #fff;
+	}
+	.flow-node strong {
+		font-size: 0.8rem;
+		line-height: 1.35;
+	}
+	.flow-node > span:last-child {
+		margin-top: 0.28rem;
+		color: var(--accent);
+		font-size: 0.68rem;
+		line-height: 1.3;
+	}
+	.flow-packet {
+		position: absolute;
+		top: 0.78rem;
+		left: 10%;
+		z-index: 0;
+		width: 0.36rem;
+		height: 0.36rem;
+		border-radius: 50%;
+		background: var(--accent);
+		box-shadow: 0 0 0 4px rgba(23, 74, 124, 0.12);
+		opacity: 1;
+		transition: left 720ms ease, opacity 180ms ease;
+		pointer-events: none;
+	}
+	.flow-detail {
+		margin-top: 0.75rem;
+		padding-top: 0.8rem;
+		border-top: 1px solid rgb(var(--line));
+	}
+	.flow-detail-status {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		color: var(--accent);
+		font-size: 0.78rem;
+		font-weight: 800;
+	}
+	.flow-pulse {
+		width: 0.45rem;
+		height: 0.45rem;
+		border-radius: 50%;
+		background: var(--accent);
+		box-shadow: 0 0 0 0 rgba(23, 74, 124, 0.3);
+		animation: flow-pulse 2s infinite;
+	}
+	.flow-detail p {
+		margin: 0.35rem 0 0.2rem;
+		color: rgb(var(--gray-dark));
+		font-size: 0.84rem;
+		line-height: 1.5;
+	}
+	.flow-detail small {
+		color: rgb(var(--muted));
+		font-size: 0.7rem;
+	}
+	@keyframes flow-pulse {
+		0%, 100% { box-shadow: 0 0 0 0 rgba(23, 74, 124, 0.24); }
+		50% { box-shadow: 0 0 0 5px rgba(23, 74, 124, 0); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.flow-pulse {
+			animation: none;
+		}
 	}
 	.section-block {
 		padding: 2.5rem 0 0;
@@ -104,5 +310,152 @@ const posts = (await getCollection('blog'))
 		.hero-description {
 			font-size: 1rem;
 		}
+		.request-flow {
+			margin-top: 2rem;
+			padding: 1rem;
+		}
+		.request-flow-heading {
+			align-items: center;
+		}
+		.request-flow h2 {
+			font-size: 1.15rem;
+		}
+		.request-flow-intro {
+			font-size: 0.82rem;
+		}
+		.flow-journey {
+			grid-template-columns: 1fr;
+			gap: 0.25rem;
+			padding-top: 0;
+		}
+		.flow-journey::before {
+			top: 1.1rem;
+			right: auto;
+			bottom: 1.1rem;
+			left: 0.9rem;
+			width: 1px;
+			height: auto;
+		}
+		.flow-journey li {
+			min-height: 3.8rem;
+		}
+		.flow-node {
+			min-height: 3.8rem;
+			flex-direction: row;
+			align-items: center;
+			gap: 0.65rem;
+			padding: 0.2rem 0;
+			text-align: left;
+		}
+		.flow-node-dot {
+			flex: 0 0 auto;
+			margin-bottom: 0;
+		}
+		.flow-node strong {
+			flex: 1 1 auto;
+		}
+		.flow-node > span:last-child {
+			margin: 0;
+		}
+		.flow-packet {
+			display: none;
+		}
 	}
 </style>
+
+<script>
+	const flowSteps = [...document.querySelectorAll('[data-flow-step]')];
+	const flowItems = [...document.querySelectorAll('.flow-journey li')];
+	const flowStatus = document.querySelector('[data-flow-status]');
+	const flowDetail = document.querySelector('[data-flow-detail]');
+	const flowTechnical = document.querySelector('[data-flow-technical]');
+	const flowPacket = document.querySelector('.flow-packet');
+	const flowData = [
+		{
+			status: '눌렀어요',
+			detail: '방문자가 이 블로그 주소를 누르면 브라우저가 글을 요청하기 시작합니다.',
+			technical: 'Browser',
+		},
+		{
+			status: '주소를 찾았어요',
+			detail: '도메인 이름을 실제로 찾아갈 IP 주소로 바꿉니다.',
+			technical: 'DNS lookup',
+		},
+		{
+			status: '연결했어요',
+			detail: '안전하게 대화할 연결을 만들고, 요청을 보낼 준비를 합니다.',
+			technical: 'TCP handshake · TLS',
+		},
+		{
+			status: '도착했어요',
+			detail: '공개된 입구를 거쳐 외부에 문을 직접 열지 않은 홈서버로 요청이 들어옵니다.',
+			technical: 'Edge · Tunnel · Ingress',
+		},
+		{
+			status: '보여줘요',
+			detail: '홈서버의 블로그가 글을 건네고, 브라우저가 화면에 보여줍니다.',
+			technical: 'Kubernetes · Blog Pod',
+		},
+	];
+	let activeFlowStep = 0;
+	let flowTimer;
+
+	const activateFlowStep = (index, { instant = false } = {}) => {
+		const previousStep = activeFlowStep;
+		activeFlowStep = index;
+		flowItems.forEach((item, itemIndex) => item.classList.toggle('is-active', itemIndex === index));
+		if (flowStatus) flowStatus.textContent = flowData[index].status;
+		if (flowDetail) flowDetail.textContent = flowData[index].detail;
+		if (flowTechnical) flowTechnical.textContent = flowData[index].technical;
+		if (flowPacket) {
+			const progress = `${10 + index * 20}%`;
+			if (instant) {
+				flowPacket.style.transition = 'none';
+				flowPacket.style.opacity = '1';
+				flowPacket.style.left = progress;
+				window.requestAnimationFrame(() => {
+					flowPacket.style.transition = '';
+				});
+				return;
+			}
+			if (previousStep === flowData.length - 1 && index === 0) {
+				flowPacket.style.transition = 'none';
+				flowPacket.style.opacity = '0';
+				flowPacket.style.left = progress;
+				window.requestAnimationFrame(() => {
+					window.requestAnimationFrame(() => {
+						flowPacket.style.transition = '';
+						flowPacket.style.opacity = '1';
+					});
+				});
+			} else {
+				flowPacket.style.opacity = '1';
+				flowPacket.style.left = progress;
+			}
+		}
+	};
+
+	const startFlow = (reset = true) => {
+		window.clearInterval(flowTimer);
+		if (reset) activateFlowStep(0);
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		flowTimer = window.setInterval(() => {
+			activateFlowStep((activeFlowStep + 1) % flowData.length);
+		}, 2200);
+	};
+
+	const hasFlowInteraction = () => flowSteps.some((step) => step.matches(':hover'));
+	const pauseFlow = (index) => {
+		window.clearInterval(flowTimer);
+		activateFlowStep(index, { instant: true });
+	};
+	const resumeFlow = () => {
+		if (!hasFlowInteraction()) startFlow(false);
+	};
+
+	flowSteps.forEach((step, index) => {
+		step.addEventListener('mouseenter', () => pauseFlow(index));
+		step.addEventListener('mouseleave', resumeFlow);
+	});
+	startFlow();
+</script>

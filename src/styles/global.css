@@ -5,6 +5,7 @@
  */
 
 :root {
+	color-scheme: light;
 	--accent: #174a7c;
 	--accent-dark: #0f3358;
 	--black: 15, 18, 25;
@@ -14,9 +15,50 @@
 	--line: 226, 232, 240;
 	--muted: 85, 99, 117;
 	--surface: 250, 251, 252;
-	--gray-gradient: rgba(var(--gray-light), 0%), #fff;
+	--page-bg: #fff;
+	--surface-strong: 255, 255, 255;
+	--gray-gradient: rgba(var(--gray-light), 0%), rgb(var(--surface-strong));
 	--box-shadow:
 		0 8px 24px rgba(17, 24, 39, 8%);
+}
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--accent: #79b5ed;
+	--accent-dark: #9bcaf2;
+	--black: 241, 245, 249;
+	--gray: 148, 163, 184;
+	--gray-light: 51, 65, 85;
+	--gray-dark: 226, 232, 240;
+	--line: 71, 85, 105;
+	--muted: 148, 163, 184;
+	--surface: 24, 31, 40;
+	--page-bg: #0f141b;
+	--surface-strong: 26, 32, 42;
+	--gray-gradient: rgba(var(--gray-light), 0%), rgb(var(--surface-strong));
+	--box-shadow:
+		0 8px 24px rgba(0, 0, 0, 30%);
+}
+:root[data-theme='dark'] header {
+	background: var(--page-bg);
+	background-color: var(--page-bg);
+	color: rgb(var(--gray-dark));
+	border-bottom-color: rgb(var(--line));
+}
+:root[data-theme='dark'] header h2 a,
+:root[data-theme='dark'] header .internal-links a {
+	color: rgb(var(--black));
+}
+:root[data-theme='dark'] header .social-link {
+	color: rgb(var(--gray-dark));
+	background: rgb(var(--surface-strong)) !important;
+	background-color: rgb(var(--surface-strong)) !important;
+	border-color: rgb(var(--line));
+}
+:root[data-theme='dark'] header .theme-toggle {
+	color: rgb(var(--gray-dark));
+	background: transparent !important;
+	background-color: transparent !important;
+	border-color: transparent;
 }
 *,
 *::before,
@@ -30,7 +72,7 @@ body {
 	margin: 0;
 	padding: 0;
 	text-align: left;
-	background: #fff;
+	background: var(--page-bg);
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	overflow-x: hidden;
