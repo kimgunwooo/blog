@@ -9,38 +9,38 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const posts = (await getCollection('blog'))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-	.slice(0, 4);
+	.slice(0, 8);
 
 const requestFlow = [
 	{
-		label: '눌렀어요',
+		label: '출발해요',
 		place: '방문자',
 		technical: 'Browser',
 		detail: '방문자가 글 링크를 누르면 브라우저가 서버를 찾기 시작합니다.',
 	},
 	{
-		label: '주소를 찾았어요',
+		label: '주소를 찾아요',
 		place: 'DNS → IP',
 		technical: 'DNS lookup',
 		detail: '도메인 이름을 실제로 찾아갈 IP 주소로 바꿉니다.',
 	},
 	{
-		label: '연결했어요',
+		label: '연결을 준비해요',
 		place: 'TCP + TLS',
 		technical: 'TCP handshake · TLS',
 		detail: '안전하게 대화할 연결을 만들고, 요청을 보낼 준비를 합니다.',
 	},
 	{
-		label: '도착했어요',
-		place: '홈서버 입구',
-		technical: 'Edge · Tunnel · Ingress',
-		detail: '공개된 입구를 거쳐 외부에 문을 직접 열지 않은 홈서버로 요청이 들어옵니다.',
+		label: '글을 찾으러 가요',
+		place: '홈서버 · 글 보관함',
+		technical: 'Cloudflare Tunnel · Blog Pod',
+		detail: '홈서버의 글 보관함에 도착하면 방문자가 요청한 글을 꺼냅니다.',
 	},
 	{
-		label: '보여줘요',
-		place: '블로그 화면',
-		technical: 'Kubernetes · Blog Pod',
-		detail: '홈서버의 블로그가 글을 건네고, 브라우저가 화면에 보여줍니다.',
+		label: '화면에 도착해요',
+		place: '방문자 브라우저',
+		technical: 'Response · Browser render',
+		detail: '글을 담은 응답이 브라우저로 돌아오고, 지금 보고 있는 화면이 완성됩니다.',
 	},
 ];
 ---
@@ -68,23 +68,29 @@ const requestFlow = [
 								<h2 id="request-flow-title">이 글은 이렇게 도착합니다</h2>
 							</div>
 						</div>
-						<p class="request-flow-intro">링크를 누르면 요청 하나가 주소를 찾고, 연결을 만들고, 홈서버를 거쳐 화면으로 돌아옵니다.</p>
-						<ol class="flow-journey" aria-label="블로그 글 전달 흐름">
-							{requestFlow.map((step, index) => (
-								<li class:list={{ 'is-active': index === 0 }}>
-									<div class="flow-node" data-flow-step={index}>
-										<span class="flow-node-dot" aria-hidden="true"><span>0{index + 1}</span></span>
-										<strong>{step.label}</strong>
-										<span>{step.place}</span>
-									</div>
-								</li>
-							))}
-							<span class="flow-packet" aria-hidden="true"></span>
-						</ol>
-						<div class="flow-detail" aria-live="polite">
-							<div class="flow-detail-status"><span class="flow-pulse" aria-hidden="true"></span><span data-flow-status>눌렀어요</span></div>
-							<p data-flow-detail>{requestFlow[0].detail}</p>
-							<small data-flow-technical>{requestFlow[0].technical}</small>
+					<p class="request-flow-intro">링크를 누르면 요청 하나가 주소를 찾고, 연결을 만들고, 홈서버를 거쳐 화면으로 돌아옵니다.</p>
+						<div class="flow-track">
+							<ol class="flow-journey" aria-label="블로그 글 전달 흐름">
+								{requestFlow.map((step, index) => (
+									<li class:list={{ 'is-active': index === 0 }}>
+										<button class="flow-node" type="button" data-flow-step={index}>
+											<span class="flow-node-dot" aria-hidden="true"></span>
+											<strong>{step.label}</strong>
+											<span>{step.place}</span>
+										</button>
+									</li>
+								))}
+								<span class="flow-progress" aria-hidden="true"></span>
+								<span class="flow-packet" aria-hidden="true"></span>
+								<img class="flow-courier flow-courier-empty" src="/assets/pixel-courier-empty.png" alt="" aria-hidden="true" />
+								<img class="flow-courier flow-courier-carry" src="/assets/pixel-courier.png" alt="" aria-hidden="true" />
+								<img class="flow-parcel" src="/assets/pixel-parcel.png" alt="" aria-hidden="true" />
+							</ol>
+							<div class="flow-detail" aria-live="polite">
+								<div class="flow-detail-status"><span class="flow-pulse" aria-hidden="true"></span><span data-flow-status>{requestFlow[0].label}</span></div>
+								<p data-flow-detail>{requestFlow[0].detail}</p>
+								<small data-flow-technical>{requestFlow[0].technical}</small>
+							</div>
 						</div>
 					</section>
 				</section>
@@ -94,6 +100,9 @@ const requestFlow = [
 						<h2 id="recent-notes-title">최근 기록</h2>
 					</div>
 					<PostCards posts={posts} layout="home" maxTags={0} />
+					<div class="home-posts-footer">
+						<a class="all-posts-link" href="/blog/">전체 글 보러가기 <span aria-hidden="true">→</span></a>
+					</div>
 				</section>
 			</main>
 		</div>
@@ -103,8 +112,8 @@ const requestFlow = [
 
 <style>
 	.site-layout > .home-main {
-		width: min(100%, 1040px);
-		max-width: 1040px;
+		width: min(100%, 920px);
+		max-width: 920px;
 	}
 	.hero {
 		width: 100%;
@@ -131,11 +140,9 @@ const requestFlow = [
 		letter-spacing: 0;
 	}
 	.request-flow {
-		margin-top: 2.75rem;
-		padding: 1.25rem 1.35rem 1.35rem;
-		border: 1px solid rgb(var(--line));
-		border-radius: 1rem;
-		background: rgb(var(--surface));
+		margin-top: 3rem;
+		padding-top: 2.25rem;
+		border-top: 1px solid rgb(var(--line));
 	}
 	.request-flow-heading {
 		display: flex;
@@ -151,25 +158,30 @@ const requestFlow = [
 		font-size: 1.35rem;
 	}
 	.request-flow-intro {
-		margin: 0.65rem 0 1.2rem;
+		max-width: 680px;
+		margin: 0.65rem 0 0;
 		color: rgb(var(--muted));
 		font-size: 0.88rem;
 		line-height: 1.55;
+	}
+	.flow-track {
+		position: relative;
+		padding-bottom: 1.5rem;
 	}
 	.flow-journey {
 		position: relative;
 		display: grid;
 		grid-template-columns: repeat(5, minmax(0, 1fr));
 		gap: 0.3rem;
-		margin: 0;
-		padding: 0.15rem 0 0;
+		margin: 4rem 0 0;
+		padding: 0 0 0.15rem;
 		list-style: none;
 	}
 	.flow-journey::before {
 		position: absolute;
-		top: 1.05rem;
-		right: 10%;
-		left: 10%;
+		top: var(--flow-line-top, 0.25rem);
+		left: var(--flow-line-left, 1.5%);
+		width: var(--flow-line-width, 97%);
 		height: 1px;
 		background: rgb(var(--line));
 		content: '';
@@ -180,74 +192,142 @@ const requestFlow = [
 		min-width: 0;
 	}
 	.flow-node {
-		position: relative;
 		display: flex;
 		width: 100%;
-		min-height: 6.5rem;
+		min-height: 6rem;
 		flex-direction: column;
 		align-items: center;
 		padding: 0;
+		border: 0;
 		color: rgb(var(--muted));
 		background: transparent;
-		border: 0;
 		font: inherit;
 		text-align: center;
+		cursor: pointer;
 		transition: color 160ms ease, transform 160ms ease;
 	}
-	.flow-journey li.is-active .flow-node {
-		color: var(--accent);
+	.flow-node:focus-visible {
 		outline: none;
-		transform: translateY(-2px);
+	}
+	.flow-node:focus-visible strong {
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 0.25rem;
 	}
 	.flow-node-dot {
-		display: grid;
-		width: 1.8rem;
-		height: 1.8rem;
-		place-items: center;
-		margin-bottom: 0.7rem;
+		position: relative;
+		display: block;
+		width: 0.55rem;
+		height: 0.55rem;
+		margin-bottom: 0.95rem;
 		border: 1px solid rgb(var(--line));
 		border-radius: 50%;
 		background: rgb(var(--surface-strong));
-		transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 	}
-	.flow-node-dot span {
-		font-size: 0.62rem;
-		font-weight: 800;
+	.flow-node strong {
+		font-size: 0.82rem;
+		line-height: 1.35;
+	}
+	.flow-node > span:last-child {
+		margin-top: 0.3rem;
+		color: var(--accent);
+		font-size: 0.7rem;
+		line-height: 1.3;
+	}
+	.flow-journey li.is-active .flow-node {
+		color: var(--accent);
+		transform: translateY(-2px);
 	}
 	.flow-journey li.is-active .flow-node-dot {
 		border-color: var(--accent);
 		background: var(--accent);
-		box-shadow: 0 0 0 5px rgba(23, 74, 124, 0.1);
-		color: #fff;
+		box-shadow: 0 0 0 4px rgba(23, 74, 124, 0.1);
 	}
-	.flow-node strong {
-		font-size: 0.8rem;
-		line-height: 1.35;
-	}
-	.flow-node > span:last-child {
-		margin-top: 0.28rem;
-		color: var(--accent);
-		font-size: 0.68rem;
-		line-height: 1.3;
+	.flow-progress {
+		position: absolute;
+		top: var(--flow-line-top, 0.25rem);
+		left: var(--flow-line-left, 1.5%);
+		z-index: 0;
+		width: 0;
+		height: 1px;
+		background: var(--accent);
+		transition: width 700ms ease;
 	}
 	.flow-packet {
 		position: absolute;
-		top: 0.78rem;
-		left: 10%;
-		z-index: 0;
-		width: 0.36rem;
-		height: 0.36rem;
+		top: var(--flow-packet-top, 0.06rem);
+		left: var(--flow-packet-left, 1.5%);
+		z-index: 2;
+		width: 0.4rem;
+		height: 0.4rem;
 		border-radius: 50%;
 		background: var(--accent);
-		box-shadow: 0 0 0 4px rgba(23, 74, 124, 0.12);
-		opacity: 1;
-		transition: left 720ms ease, opacity 180ms ease;
+		box-shadow: 0 0 0 4px rgba(23, 74, 124, 0.1);
+		transform: translate(-50%, -50%);
+		transition: left 700ms ease, top 700ms ease;
 		pointer-events: none;
 	}
+	.flow-courier {
+		position: absolute;
+		top: var(--flow-courier-top, -3.25rem);
+		left: var(--flow-courier-left, 1.5%);
+		z-index: 3;
+		width: 3rem;
+		height: auto;
+		image-rendering: pixelated;
+		transform: translateX(-50%);
+		transition: opacity 180ms ease, left 700ms cubic-bezier(0.22, 0.61, 0.36, 1), top 700ms cubic-bezier(0.22, 0.61, 0.36, 1), filter 300ms ease;
+		pointer-events: none;
+	}
+	.flow-courier-carry {
+		opacity: 0;
+	}
+	.request-flow.has-parcel .flow-courier-empty {
+		opacity: 0;
+	}
+	.request-flow.has-parcel .flow-courier-carry {
+		opacity: 1;
+	}
+	.flow-parcel {
+		position: absolute;
+		top: var(--flow-parcel-top, -1.4rem);
+		left: var(--flow-parcel-left, 70%);
+		z-index: 3;
+		width: 2rem;
+		height: auto;
+		image-rendering: pixelated;
+		transform: translate(-50%, -50%);
+		transition: opacity 250ms ease, transform 350ms ease;
+		pointer-events: none;
+	}
+	.request-flow.is-picking-up .flow-parcel {
+		animation: parcel-pickup 650ms ease-in-out;
+	}
+	.request-flow.has-parcel .flow-parcel {
+		opacity: 0;
+		transform: translate(-50%, -70%) scale(0.7);
+	}
 	.flow-detail {
-		margin-top: 0.75rem;
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: baseline;
+		gap: 0.75rem;
+		min-height: 0;
+		margin: 0;
 		padding-top: 0.8rem;
-		border-top: 1px solid rgb(var(--line));
+		opacity: 1;
+		transform: translateY(0);
+		visibility: visible;
+		pointer-events: none;
+		transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+	}
+	.request-flow.is-detail-swapping .flow-detail {
+		opacity: 0;
+		transform: translateY(0.35rem);
 	}
 	.flow-detail-status {
 		display: flex;
@@ -256,17 +336,18 @@ const requestFlow = [
 		color: var(--accent);
 		font-size: 0.78rem;
 		font-weight: 800;
+		white-space: nowrap;
 	}
 	.flow-pulse {
 		width: 0.45rem;
 		height: 0.45rem;
 		border-radius: 50%;
 		background: var(--accent);
-		box-shadow: 0 0 0 0 rgba(23, 74, 124, 0.3);
 		animation: flow-pulse 2s infinite;
 	}
 	.flow-detail p {
-		margin: 0.35rem 0 0.2rem;
+		min-width: 0;
+		margin: 0;
 		color: rgb(var(--gray-dark));
 		font-size: 0.84rem;
 		line-height: 1.5;
@@ -274,14 +355,25 @@ const requestFlow = [
 	.flow-detail small {
 		color: rgb(var(--muted));
 		font-size: 0.7rem;
+		text-align: right;
+		white-space: nowrap;
 	}
 	@keyframes flow-pulse {
 		0%, 100% { box-shadow: 0 0 0 0 rgba(23, 74, 124, 0.24); }
 		50% { box-shadow: 0 0 0 5px rgba(23, 74, 124, 0); }
 	}
+	@keyframes parcel-pickup {
+		0%, 100% { transform: translate(-50%, -50%) scale(1); }
+		50% { transform: translate(-50%, -90%) scale(1.12); }
+	}
 	@media (prefers-reduced-motion: reduce) {
-		.flow-pulse {
+		.flow-pulse,
+		.flow-progress,
+		.flow-packet,
+		.flow-courier,
+		.flow-parcel {
 			animation: none;
+			transition: none;
 		}
 	}
 	.section-block {
@@ -295,6 +387,29 @@ const requestFlow = [
 	}
 	.section-heading h2 {
 		margin: 0;
+	}
+	.home-posts-footer {
+		display: flex;
+		justify-content: center;
+		padding-top: 1.5rem;
+	}
+	.all-posts-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		padding: 0.7rem 1rem;
+		color: var(--accent);
+		border: 1px solid rgb(var(--line));
+		border-radius: 999px;
+		font-size: 0.86rem;
+		font-weight: 800;
+		text-decoration: none;
+		transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+	}
+	.all-posts-link:hover {
+		color: #fff;
+		background: var(--accent);
+		border-color: var(--accent);
 	}
 	@media (max-width: 720px) {
 		.site-layout > .home-main {
@@ -312,7 +427,7 @@ const requestFlow = [
 		}
 		.request-flow {
 			margin-top: 2rem;
-			padding: 1rem;
+			padding-top: 1.75rem;
 		}
 		.request-flow-heading {
 			align-items: center;
@@ -323,33 +438,33 @@ const requestFlow = [
 		.request-flow-intro {
 			font-size: 0.82rem;
 		}
+		.flow-track {
+			padding-bottom: 2rem;
+		}
 		.flow-journey {
 			grid-template-columns: 1fr;
-			gap: 0.25rem;
-			padding-top: 0;
+			gap: 0.1rem;
+			margin-top: 2.75rem;
+			padding-left: 0.6rem;
 		}
 		.flow-journey::before {
-			top: 1.1rem;
+			top: var(--flow-line-top, 0.25rem);
 			right: auto;
-			bottom: 1.1rem;
-			left: 0.9rem;
+			bottom: auto;
+			left: var(--flow-line-left, 0.85rem);
 			width: 1px;
-			height: auto;
-		}
-		.flow-journey li {
-			min-height: 3.8rem;
+			height: var(--flow-line-height, calc(100% - 0.5rem));
 		}
 		.flow-node {
-			min-height: 3.8rem;
+			min-height: 3.5rem;
 			flex-direction: row;
 			align-items: center;
-			gap: 0.65rem;
-			padding: 0.2rem 0;
+			gap: 0.7rem;
 			text-align: left;
 		}
 		.flow-node-dot {
 			flex: 0 0 auto;
-			margin-bottom: 0;
+			margin: 0;
 		}
 		.flow-node strong {
 			flex: 1 1 auto;
@@ -357,8 +472,22 @@ const requestFlow = [
 		.flow-node > span:last-child {
 			margin: 0;
 		}
-		.flow-packet {
-			display: none;
+		.flow-detail {
+			grid-template-columns: 1fr;
+			gap: 0.3rem;
+			padding-top: 0.7rem;
+		}
+		.flow-detail p {
+			font-size: 0.8rem;
+		}
+		.flow-detail small {
+			text-align: left;
+		}
+		.flow-courier {
+			width: 2.2rem;
+		}
+		.flow-parcel {
+			width: 1.6rem;
 		}
 	}
 </style>
@@ -366,96 +495,211 @@ const requestFlow = [
 <script>
 	const flowSteps = [...document.querySelectorAll('[data-flow-step]')];
 	const flowItems = [...document.querySelectorAll('.flow-journey li')];
+	const flowDots = flowSteps.map((step) => step.querySelector('.flow-node-dot'));
+	const flowJourney = document.querySelector('.flow-journey');
 	const flowStatus = document.querySelector('[data-flow-status]');
 	const flowDetail = document.querySelector('[data-flow-detail]');
 	const flowTechnical = document.querySelector('[data-flow-technical]');
+	const flowProgress = document.querySelector('.flow-progress');
 	const flowPacket = document.querySelector('.flow-packet');
+	const flowCouriers = [...document.querySelectorAll('.flow-courier')];
+	const flowParcel = document.querySelector('.flow-parcel');
+	const flowSection = document.querySelector('.request-flow');
 	const flowData = [
 		{
-			status: '눌렀어요',
+			status: '출발해요',
 			detail: '방문자가 이 블로그 주소를 누르면 브라우저가 글을 요청하기 시작합니다.',
 			technical: 'Browser',
 		},
 		{
-			status: '주소를 찾았어요',
+			status: '주소를 찾아요',
 			detail: '도메인 이름을 실제로 찾아갈 IP 주소로 바꿉니다.',
 			technical: 'DNS lookup',
 		},
 		{
-			status: '연결했어요',
+			status: '연결을 준비해요',
 			detail: '안전하게 대화할 연결을 만들고, 요청을 보낼 준비를 합니다.',
 			technical: 'TCP handshake · TLS',
 		},
 		{
-			status: '도착했어요',
-			detail: '공개된 입구를 거쳐 외부에 문을 직접 열지 않은 홈서버로 요청이 들어옵니다.',
-			technical: 'Edge · Tunnel · Ingress',
+			status: '글을 찾으러 가요',
+			detail: '홈서버의 글 보관함에 도착하면 방문자가 요청한 글을 꺼냅니다.',
+			technical: 'Cloudflare Tunnel · Blog Pod',
 		},
 		{
-			status: '보여줘요',
-			detail: '홈서버의 블로그가 글을 건네고, 브라우저가 화면에 보여줍니다.',
-			technical: 'Kubernetes · Blog Pod',
+			status: '화면에 도착해요',
+			detail: '글을 담은 응답이 브라우저로 돌아오고, 지금 보고 있는 화면이 완성됩니다.',
+			technical: 'Response · Browser render',
 		},
 	];
 	let activeFlowStep = 0;
-	let flowTimer;
+	let flowTimers = [];
+	let flowRunId = 0;
+	let flowAnchors = [];
+	let resumeTimer;
+	let detailSwapTimer;
 
-	const activateFlowStep = (index, { instant = false } = {}) => {
-		const previousStep = activeFlowStep;
-		activeFlowStep = index;
-		flowItems.forEach((item, itemIndex) => item.classList.toggle('is-active', itemIndex === index));
-		if (flowStatus) flowStatus.textContent = flowData[index].status;
-		if (flowDetail) flowDetail.textContent = flowData[index].detail;
-		if (flowTechnical) flowTechnical.textContent = flowData[index].technical;
+	const clearFlowTimers = () => {
+		flowTimers.forEach((timer) => window.clearTimeout(timer));
+		flowTimers = [];
+	};
+
+	const stopFlow = () => {
+		flowRunId += 1;
+		clearFlowTimers();
+		window.clearTimeout(resumeTimer);
+		flowSection?.classList.remove('is-picking-up');
+	};
+
+	const cancelFlowResume = () => {
+		window.clearTimeout(resumeTimer);
+	};
+
+	const scheduleFlowResume = () => {
+		if (flowSteps.some((step) => step.matches(':focus'))) return;
+		window.clearTimeout(resumeTimer);
+		const resumeStep = activeFlowStep;
+		resumeTimer = window.setTimeout(() => playFlow(resumeStep), 1800);
+	};
+
+	const positionFlow = () => {
+		if (!flowJourney || !flowDots.length) return;
+		const journeyRect = flowJourney.getBoundingClientRect();
+		flowAnchors = flowDots.map((dot) => {
+			const rect = dot.getBoundingClientRect();
+			return {
+				x: rect.left + rect.width / 2 - journeyRect.left,
+				y: rect.top + rect.height / 2 - journeyRect.top,
+			};
+		});
+		const first = flowAnchors[0];
+		const last = flowAnchors[flowAnchors.length - 1];
+		const storage = flowAnchors[3];
+		const mobile = window.matchMedia('(max-width: 720px)').matches;
+
+		flowJourney.style.setProperty('--flow-line-left', `${first.x}px`);
+		flowJourney.style.setProperty('--flow-line-top', `${first.y}px`);
+		flowJourney.style.setProperty('--flow-line-width', `${last.x - first.x}px`);
+		flowJourney.style.setProperty('--flow-line-height', `${last.y - first.y}px`);
+		if (flowParcel) {
+			flowParcel.style.left = `${storage.x}px`;
+			flowParcel.style.top = `${storage.y - (mobile ? 12 : 18)}px`;
+		}
+		updateFlowActors(mobile);
+	};
+
+	const updateFlowActors = (mobile = window.matchMedia('(max-width: 720px)').matches) => {
+		const current = flowAnchors[activeFlowStep];
+		const first = flowAnchors[0];
+		if (!current || !first) return;
 		if (flowPacket) {
-			const progress = `${10 + index * 20}%`;
-			if (instant) {
-				flowPacket.style.transition = 'none';
-				flowPacket.style.opacity = '1';
-				flowPacket.style.left = progress;
-				window.requestAnimationFrame(() => {
-					flowPacket.style.transition = '';
-				});
-				return;
-			}
-			if (previousStep === flowData.length - 1 && index === 0) {
-				flowPacket.style.transition = 'none';
-				flowPacket.style.opacity = '0';
-				flowPacket.style.left = progress;
-				window.requestAnimationFrame(() => {
-					window.requestAnimationFrame(() => {
-						flowPacket.style.transition = '';
-						flowPacket.style.opacity = '1';
-					});
-				});
+			flowPacket.style.left = `${current.x}px`;
+			flowPacket.style.top = `${current.y}px`;
+		}
+		if (flowProgress) {
+			flowProgress.style.left = `${first.x}px`;
+			flowProgress.style.top = `${first.y}px`;
+			if (mobile) {
+				flowProgress.style.width = '1px';
+				flowProgress.style.height = `${Math.max(0, current.y - first.y)}px`;
 			} else {
-				flowPacket.style.opacity = '1';
-				flowPacket.style.left = progress;
+				flowProgress.style.width = `${Math.max(0, current.x - first.x)}px`;
+				flowProgress.style.height = '1px';
 			}
 		}
+		flowCouriers.forEach((courier) => {
+			courier.style.left = mobile ? `${first.x - 18}px` : `${current.x}px`;
+			courier.style.top = mobile ? `${current.y}px` : `${current.y - 3}px`;
+			courier.style.transform = mobile ? 'translate(-50%, -50%)' : 'translate(-50%, -100%)';
+		});
 	};
 
-	const startFlow = (reset = true) => {
-		window.clearInterval(flowTimer);
-		if (reset) activateFlowStep(0);
+	const activateFlowStep = (index) => {
+		activeFlowStep = index;
+		flowItems.forEach((item, itemIndex) => item.classList.toggle('is-active', itemIndex === index));
+		window.clearTimeout(detailSwapTimer);
+		const updateDetail = () => {
+			if (flowStatus) flowStatus.textContent = flowData[index].status;
+			if (flowDetail) flowDetail.textContent = flowData[index].detail;
+			if (flowTechnical) flowTechnical.textContent = flowData[index].technical;
+			flowSection?.classList.remove('is-detail-swapping');
+		};
+		if (flowStatus?.textContent === flowData[index].status) {
+			updateDetail();
+		} else {
+			flowSection?.classList.add('is-detail-swapping');
+			detailSwapTimer = window.setTimeout(updateDetail, 140);
+		}
+		updateFlowActors();
+		if (flowSection) flowSection.classList.toggle('is-finished', index === flowData.length - 1);
+	};
+
+	const selectFlowStep = (index) => {
+		stopFlow();
+		flowSection?.classList.toggle('has-parcel', index >= 4);
+		flowSection?.classList.toggle('is-picking-up', index === 3);
+		activateFlowStep(index);
+	};
+
+	const playFlow = (startIndex = 0) => {
+		stopFlow();
+		const runId = flowRunId;
+		const startOffset = startIndex * 1100;
+		flowSection?.classList.toggle('has-parcel', startIndex >= 4);
+		flowSection?.classList.toggle('is-finished', startIndex >= 4);
+		activateFlowStep(startIndex);
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-		flowTimer = window.setInterval(() => {
-			activateFlowStep((activeFlowStep + 1) % flowData.length);
-		}, 2200);
-	};
 
-	const hasFlowInteraction = () => flowSteps.some((step) => step.matches(':hover'));
-	const pauseFlow = (index) => {
-		window.clearInterval(flowTimer);
-		activateFlowStep(index, { instant: true });
-	};
-	const resumeFlow = () => {
-		if (!hasFlowInteraction()) startFlow(false);
+		const after = (delay, callback) => {
+			flowTimers.push(window.setTimeout(() => {
+				if (runId !== flowRunId) return;
+				callback();
+			}, delay));
+		};
+		if (startIndex < 1) after(1100 - startOffset, () => activateFlowStep(1));
+		if (startIndex < 2) after(2200 - startOffset, () => activateFlowStep(2));
+		if (startIndex < 3) after(3300 - startOffset, () => {
+			activateFlowStep(3);
+			flowSection?.classList.add('is-picking-up');
+		});
+		if (startIndex <= 3) after(3950 - startOffset, () => {
+			flowSection?.classList.remove('is-picking-up');
+			flowSection?.classList.add('has-parcel');
+		});
+		if (startIndex < 4) after(4700 - startOffset, () => activateFlowStep(4));
+		after(6100 - startOffset, () => flowSection?.classList.add('is-finished'));
+		after(8200 - startOffset, playFlow);
 	};
 
 	flowSteps.forEach((step, index) => {
-		step.addEventListener('mouseenter', () => pauseFlow(index));
-		step.addEventListener('mouseleave', resumeFlow);
+		step.addEventListener('mouseenter', () => {
+			selectFlowStep(index);
+			cancelFlowResume();
+		});
+		step.addEventListener('mouseleave', scheduleFlowResume);
+		step.addEventListener('blur', scheduleFlowResume);
+		step.addEventListener('focus', () => {
+			selectFlowStep(index);
+			cancelFlowResume();
+		});
+		step.addEventListener('click', () => {
+			selectFlowStep(index);
+			cancelFlowResume();
+		});
 	});
-	startFlow();
+
+	positionFlow();
+	document.fonts?.ready.then(positionFlow);
+	activateFlowStep(0);
+	window.addEventListener('resize', positionFlow);
+
+	let flowInView = false;
+	if (flowSection && 'IntersectionObserver' in window) {
+		new IntersectionObserver(([entry], observer) => {
+			if (entry.isIntersecting && !flowInView) playFlow();
+			flowInView = entry.isIntersecting;
+		}, { threshold: 0.35 }).observe(flowSection);
+	} else {
+		playFlow();
+	}
 </script>

@@ -485,10 +485,6 @@ Pod IP 할당
 - **Calico**는 라우팅과 정책을 함께 다루고 싶을 때 선택지가 넓다. BGP는 경로를 광고하는 control plane이고, VXLAN/IPIP는 별도의 transport 선택이다.
 - **Cilium**은 eBPF 기반으로 policy, Service LB, 관측을 커널 경로에 통합하고 싶을 때 강력하다. 하지만 native routing인지 overlay인지, kube-proxy replacement를 켰는지는 별도로 확인해야 한다.
 
-면접이나 장애 대응에서 방어 가능한 설명은 다음에 가깝다.
-
-> “CNI를 비교할 때 Flannel=VXLAN, Calico=BGP, Cilium=eBPF로 외우기보다, 경로를 누가 만들고, 패킷을 어떻게 운반하며, 정책과 Service LB를 어느 계층에서 처리하는지 분리해 확인합니다. 그 다음 현재 노드의 route, tunnel, BGP 상태, eBPF 또는 kube-proxy 구성을 실제 명령으로 검증합니다.”
-
 ## 참고한 공식 문서
 
 - [Kubernetes · Cluster Networking](https://kubernetes.io/docs/concepts/cluster-administration/networking/)
