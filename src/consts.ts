@@ -4,6 +4,7 @@ export const SITE_DESCRIPTION =
 
 export const PROFILE_LINKS = {
 	github: 'https://github.com/kimgunwooo',
+	repository: 'https://github.com/kimgunwooo/blog',
 	velog: 'https://velog.io/@kimgunwooo',
 	email: 'mailto:kw4u1223@gmail.com',
 };

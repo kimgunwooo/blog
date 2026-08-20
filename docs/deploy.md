@@ -1,84 +1,69 @@
-# Deploy skeleton
+# 배포 구조
 
-This repo is prepared for GHCR plus Argo CD GitOps deployment to the home RKE2 cluster.
+이 저장소는 정적 Astro 블로그를 Docker image로 만들고, GHCR과 Argo CD를 통해 홈 Kubernetes에 배포한다.
 
-## Runtime
+## 현재 리소스
 
-- App: `platform-ops-log`
-- Image: `ghcr.io/kimgunwooo/platform-ops-log:<tag>`
-- Container port: `4321`
-- Kubernetes namespace: `platform-ops-log`
-- Argo CD application namespace: `argocd`
-- Argo source path: `deploy/k8s`
-- Account boundary: only the personal GitHub/GHCR account `kimgunwooo` is in scope.
+- 애플리케이션: `blog`
+- 이미지: `ghcr.io/kimgunwooo/blog:<tag>`
+- 컨테이너 포트: `4321`
+- Kubernetes namespace: `blog`
+- Argo CD Application: `blog`
+- 애플리케이션 manifest 경로: `deploy/k8s`
+- 중앙 Argo CD 관리 저장소: [home-ops](https://github.com/kimgunwooo/home-ops)
 
-## Local verification
+이 저장소는 애플리케이션 코드와 `deploy/k8s` 리소스를 관리한다. Argo CD Application 자체와 클러스터 공통 구성은 `home-ops`가 관리하므로 이 저장소에서 Application을 직접 apply하지 않는다.
+
+## 로컬 검증
 
 ```bash
 npm ci
 npm run build
-docker build -t ghcr.io/kimgunwooo/platform-ops-log:local .
-docker run --rm -p 4321:4321 ghcr.io/kimgunwooo/platform-ops-log:local
+docker build -t ghcr.io/kimgunwooo/blog:local .
+docker run --rm -p 4321:4321 ghcr.io/kimgunwooo/blog:local
 curl -fsS http://127.0.0.1:4321/
 kubectl kustomize deploy/k8s
-kubectl kustomize deploy/argocd
 ```
 
-Stop the local container with `Ctrl-C`.
+## 이미지 tag
 
-## Image tags
+GitHub Actions는 다음 기준으로 이미지를 만든다.
 
-The GitHub Actions workflow publishes on:
+- `main` push: `git-<commit>`
+- GitHub Release 발행: Release tag 그대로 사용. 예: `v0.11`
+- 수동 `workflow_dispatch`: 입력한 tag 사용. 일회성 이미지 검증 용도
 
-- `main` push with paths that affect the site or Kubernetes manifests
-- manual `workflow_dispatch` with an explicit `image_tag`, only for one-off image publishing
-
-On `main` push, the workflow publishes an image tagged `git-<commit>` and commits the same tag back into `deploy/k8s/kustomization.yaml`.
-
-Manual dispatch does not update the GitOps manifest. If you use it, set the same tag in `deploy/k8s/kustomization.yaml` yourself:
+`main` push 또는 Release 발행 후 workflow가 `deploy/k8s/kustomization.yaml`의 `newTag`를 변경하고 같은 저장소의 `main`에 commit한다.
 
 ```yaml
 images:
-  - name: ghcr.io/kimgunwooo/platform-ops-log
-    newTag: git-<commit>
+  - name: ghcr.io/kimgunwooo/blog
+    newTag: v0.11
 ```
 
-## Argo apply checklist
+Kustomize는 이 값을 사용해 Deployment의 `image` tag를 최종 manifest에 반영한다. Argo CD는 `home-ops` Application의 source revision을 기준으로 이 manifest를 읽고 sync한다.
 
-Do not apply the Argo application until these are true:
+## Argo CD 확인
 
-- The repo exists at `https://github.com/kimgunwooo/platform-ops-log.git`.
-- The commit containing `deploy/k8s` has been pushed.
-- The GHCR image tag in `deploy/k8s/kustomization.yaml` has been published for `linux/amd64` and `linux/arm64`.
-- If the repo is private, Argo CD has read access to the repo.
-- If the GHCR package is private, create an image pull secret in namespace `platform-ops-log` and add `imagePullSecrets` to the Deployment before sync.
-- `kubectl kustomize deploy/k8s` renders cleanly.
-- `kubectl kustomize deploy/argocd` renders cleanly.
-- Cloudflare Tunnel public hostname will be configured manually after cluster deploy.
-
-Apply only after the checklist passes:
+Application은 `home-ops`에서 관리한다. 배포 후에는 다음 순서로 확인한다.
 
 ```bash
-kubectl --server=https://100.125.75.80:6443 apply -k deploy/argocd
+kubectl --server=https://100.125.75.80:6443 -n argocd get applications.argoproj.io blog
+kubectl --server=https://100.125.75.80:6443 -n blog get deploy,svc,pods
+kubectl --server=https://100.125.75.80:6443 -n blog wait --for=condition=available deployment/blog --timeout=120s
 ```
 
-Argo CD is configured with automated sync. Verify:
-
-```bash
-kubectl --server=https://100.125.75.80:6443 -n argocd get applications.argoproj.io platform-ops-log
-kubectl --server=https://100.125.75.80:6443 -n platform-ops-log get deploy,svc,pods
-kubectl --server=https://100.125.75.80:6443 -n platform-ops-log wait --for=condition=available deployment/platform-ops-log --timeout=120s
-```
+Argo CD 상태가 `Synced / Healthy`가 되면 Discord `on-deployed` 알림을 확인한다. sync 실패나 health degraded 상태는 각각 별도 Discord 알림으로 확인한다.
 
 ## Cloudflare Tunnel
 
-Configure this manually in Cloudflare Zero Trust:
+Cloudflare Tunnel의 public hostname은 다음 Kubernetes Service를 가리킨다.
 
 - Public hostname: `blog.kwl4b.com`
 - Service type: `HTTP`
-- Service URL: `platform-ops-log.platform-ops-log.svc.cluster.local:4321`
+- Service URL: `blog.blog.svc.cluster.local:4321`
 
-After DNS and tunnel routing are active:
+외부 경로가 연결된 뒤 다음 명령으로 최종 경로를 확인한다.
 
 ```bash
 curl -fsS https://blog.kwl4b.com/
