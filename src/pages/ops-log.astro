@@ -7,6 +7,35 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const changelog = [
 	{
+		version: 'v0.11',
+		date: '2026.08.20',
+		title: 'Mermaid 다이어그램의 테마 전환 가독성 개선',
+		items: [
+			'라이트·다크 모드에 맞춰 Mermaid 본문 글자, 노드, 메시지, 연결선 색상을 분리 적용',
+			'Flowchart 노드 글자는 밝은 배경에서 읽기 쉽도록 고정하고, Sequence diagram의 메시지와 lifeline은 테마별 명암으로 조정',
+			'테마를 전환할 때 이미 렌더링된 SVG의 글자·선·화살표 색상도 함께 동기화',
+		],
+	},
+	{
+		version: 'v0.10',
+		date: '2026.08.20',
+		title: 'Umami Cloud 기반 방문 분석 추가',
+		items: [
+			'Umami Cloud를 공통 레이아웃에 연결해 페이지 방문 데이터를 기록',
+			'글 클릭·카테고리·태그 필터·홈 요청 흐름 등 주요 사용자 동작을 이벤트로 추적',
+		],
+	},
+	{
+		version: 'v0.9',
+		date: '2026.08.20',
+		title: '글 댓글과 반응 기능 추가',
+		items: [
+			'Giscus와 GitHub Discussions를 연결해 글별 댓글·반응 제공',
+			'Giscus 메타데이터를 사용해 본문에 댓글 수와 반응 수 표시',
+			'라이트·다크 모드 전환에 맞춰 댓글 UI 테마 동기화',
+		],
+	},
+	{
 		version: 'v0.8',
 		date: '2026.08.17',
 		title: '블로그 화면과 글 탐색 경험 정리',
