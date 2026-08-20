@@ -3,6 +3,7 @@ title: 'FQS에서 대기열 인스턴스를 동적으로 만들기로 한 이유
 description: 'B2B 대기열 서비스에서 Kafka 중심 설계에서 Docker 기반 동적 인스턴스 구조로 방향을 바꾼 판단 과정을 정리했다.'
 category: 'Automation'
 pubDate: '2024-10-07'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['fqs', 'queue', 'docker', 'eureka', 'gateway', 'sdk']
 ---

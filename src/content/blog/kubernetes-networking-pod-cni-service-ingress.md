@@ -3,6 +3,7 @@ title: 'Kubernetes 네트워크를 Pod, CNI, Service, Ingress로 나눠 보기'
 description: 'Kubernetes의 Pod network, CNI, Service DNS, EndpointSlice, Ingress와 Gateway를 외부 요청부터 애플리케이션까지의 흐름으로 정리했다.'
 category: 'Kubernetes'
 pubDate: '2026-08-08'
+createdAt: '2026-08-09T01:16:24+09:00'
 tags: ['kubernetes', 'network', 'pod', 'cni', 'service', 'ingress', 'gateway']
 ---
 

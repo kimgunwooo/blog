@@ -3,6 +3,7 @@ title: 'Jenkins에서 멀티 플랫폼 Docker 이미지를 빌드하며 헷갈�
 description: 'Docker socket, registry 인증, Jenkins agent workspace, Harbor manifest list를 따라가며 멀티 플랫폼 CI/CD의 실행 경계를 정리했다.'
 category: 'Docker'
 pubDate: '2026-07-23'
+createdAt: '2026-07-23T22:38:41+09:00'
 tags: ['jenkins', 'docker', 'buildkit', 'harbor', 'multi-platform', 'ci-cd']
 ---
 

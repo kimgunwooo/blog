@@ -3,6 +3,7 @@ title: 'Google SRE는 무엇을 해결하려 했나: 운영을 엔지니어링�
 description: 'Google SRE Book의 SLI, SLO, error budget, toil, monitoring 원칙을 기준으로 SRE를 도구 목록이 아닌 운영 판단 방식으로 정리했다.'
 category: 'Observability'
 pubDate: '2026-07-29T10:07:56+09:00'
+createdAt: '2026-07-29T10:07:56+09:00'
 showTime: true
 tags: ['sre', 'google-sre', 'sli', 'slo', 'error-budget', 'toil', 'observability']
 ---

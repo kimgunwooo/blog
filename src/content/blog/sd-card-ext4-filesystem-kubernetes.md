@@ -3,6 +3,7 @@ title: 'SD 카드 하나가 Kubernetes 노드를 멈췄다: ext4, 파티션, VFS
 description: 'raspi-02 장애를 계기로 SD 카드의 파티션과 ext4 파일시스템, Linux VFS와 journal이 Kubernetes 노드 장애로 이어지는 과정을 정리했다.'
 category: 'Kubernetes'
 pubDate: '2026-08-10'
+createdAt: '2026-08-16T21:34:19+09:00'
 tags: ['kubernetes', 'linux', 'ext4', 'filesystem', 'sd-card', 'rke2', 'storage']
 ---
 

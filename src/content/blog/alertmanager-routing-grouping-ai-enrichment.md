@@ -3,6 +3,7 @@ title: 'Alertmanager는 알림을 어떻게 관리하는가: 원문 알림과 AI
 description: 'Prometheus가 만든 alert를 Alertmanager가 그룹화·라우팅·억제하는 기본 원리와, 홈 Kubernetes 환경에서 warning 알림이 AI로 전달되지 않았던 원인 및 개선 흐름을 정리했다.'
 category: 'Observability'
 pubDate: '2026-08-09T22:17:16+09:00'
+createdAt: '2026-08-16T21:34:19+09:00'
 showTime: true
 tags: ['alertmanager', 'prometheus', 'observability', 'kubernetes', 'discord', 'ai']
 ---

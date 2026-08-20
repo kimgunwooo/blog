@@ -3,6 +3,7 @@ title: 'DNS 다음에는 무엇이 있나: HTTPS 요청이 Cloudflare Tunnel과 
 description: 'DNS가 IP를 알려준 뒤 OS route, TCP·TLS 또는 QUIC, Cloudflare Edge, Tunnel, Kubernetes Service와 Ready Pod까지 이어지는 요청 경로를 일반 환경과 개인 RKE2 홈 클러스터 기준으로 나눠 정리했다.'
 category: 'Network'
 pubDate: '2026-08-04T05:37:27+09:00'
+createdAt: '2026-08-04T05:37:27+09:00'
 showTime: true
 tags: ['https', 'tls', 'cloudflare-tunnel', 'kubernetes', 'service', 'ingress', 'network']
 ---

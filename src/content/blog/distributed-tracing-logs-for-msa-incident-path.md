@@ -3,6 +3,7 @@ title: '분산 추적과 로그를 붙여야 MSA 장애를 따라갈 수 있다'
 description: '서비스 간 호출이 나뉘었을 때 trace ID, span, Zipkin, 로그 상관관계가 왜 필요한지 정리했다.'
 category: 'Observability'
 pubDate: '2024-08-03'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['msa', 'distributed-tracing', 'zipkin', 'trace-id', 'logging']
 ---

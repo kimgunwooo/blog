@@ -26,7 +26,7 @@ const relatedPosts = (await getCollection('blog'))
 		(a, b) =>
 			b.sharedTagCount - a.sharedTagCount ||
 			Number(b.sameCategory) - Number(a.sameCategory) ||
-			b.entry.data.pubDate.valueOf() - a.entry.data.pubDate.valueOf(),
+			b.entry.data.createdAt.valueOf() - a.entry.data.createdAt.valueOf(),
 	)
 	.slice(0, 3)
 	.map(({ entry }) => entry);

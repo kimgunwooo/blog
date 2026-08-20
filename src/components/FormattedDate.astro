@@ -3,25 +3,30 @@ interface Props {
 	date: Date;
 	showTime?: boolean;
 	showSeconds?: boolean;
+	relativeDate?: Date;
 }
 
-const { date, showTime = false, showSeconds = true } = Astro.props;
+const { date, showTime = false, showSeconds = true, relativeDate } = Astro.props;
+const formattedDate = (showTime ? date.toLocaleString : date.toLocaleDateString).call(date, 'ko-KR', {
+	year: 'numeric',
+	month: '2-digit',
+	day: 'numeric',
+	...(showTime
+		? {
+			hour: '2-digit',
+			minute: '2-digit',
+			...(showSeconds ? { second: '2-digit' } : {}),
+			hour12: false,
+		}
+		: {}),
+});
 ---
 
-<time datetime={date.toISOString()}>
-	{
-		(showTime ? date.toLocaleString : date.toLocaleDateString).call(date, 'ko-KR', {
-			year: 'numeric',
-			month: '2-digit',
-			day: 'numeric',
-			...(showTime
-				? {
-					hour: '2-digit',
-					minute: '2-digit',
-					...(showSeconds ? { second: '2-digit' } : {}),
-					hour12: false,
-				}
-				: {}),
-		})
-	}
+<time
+	datetime={(relativeDate ?? date).toISOString()}
+	data-relative-time={relativeDate?.toISOString()}
+	data-absolute-label={formattedDate}
+	title={relativeDate ? formattedDate : undefined}
+>
+	{formattedDate}
 </time>

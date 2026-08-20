@@ -3,6 +3,7 @@ title: 'Flannel·Calico·Cilium은 뭐가 다른가: VXLAN, BGP, eBPF를 패킷 
 description: 'Kubernetes CNI를 Flannel, Calico, Cilium이라는 제품명으로만 비교하지 않고, VXLAN 캡슐화·BGP 경로 광고·eBPF 커널 데이터패스가 각각 어떤 문제를 해결하는지 공식 문서와 패킷 흐름으로 정리했다.'
 category: 'Kubernetes'
 pubDate: '2026-08-16T23:50:00+09:00'
+createdAt: '2026-08-17T17:39:06+09:00'
 showTime: true
 tags: ['kubernetes', 'cni', 'flannel', 'calico', 'cilium', 'vxlan', 'bgp', 'ebpf', 'networking']
 ---

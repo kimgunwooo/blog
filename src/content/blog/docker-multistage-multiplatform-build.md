@@ -3,6 +3,7 @@ title: 'Docker multi-stage와 multi-platform build 정리'
 description: '최종 runtime image를 줄이는 multi-stage build와 architecture별 image를 다루는 multi-platform build를 정리했다.'
 category: 'Docker'
 pubDate: '2026-07-05'
+createdAt: '2026-07-22T13:49:49+09:00'
 tags: ['docker', 'multi-stage', 'multi-platform', 'buildx']
 ---
 

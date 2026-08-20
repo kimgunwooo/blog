@@ -3,6 +3,7 @@ title: 'Shell script에서 상태 기반 Provisioning으로 바꾼 뒤, changed=
 description: 'IDC Demo/PoC 테넌트 서버 준비를 Ansible role과 playbook으로 나누고, 재실행 결과를 drift·재적용·비수렴으로 분리해 검증한 기록.'
 category: 'Automation'
 pubDate: '2026-07-27'
+createdAt: '2026-07-22T13:49:49+09:00'
 tags: ['ansible', 'provisioning', 'idempotency', 'docker-compose', 'postgresql']
 ---
 

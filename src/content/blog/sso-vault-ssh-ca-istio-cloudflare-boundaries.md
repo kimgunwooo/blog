@@ -3,6 +3,7 @@ title: 'SSO, Vault, SSH CA, Istio, Cloudflare Tunnel은 무엇을 나눠 맡나'
 description: 'Cloudflare Tunnel의 HTTPS부터 SSO, Vault SSH CA, Kubernetes RBAC, Istio mTLS까지 인증·권한·암호화의 역할 경계를 처음부터 정리했다.'
 category: 'Kubernetes'
 pubDate: '2026-08-02T20:30:00+09:00'
+createdAt: '2026-08-02T20:30:00+09:00'
 showTime: true
 tags: ['sso', 'keycloak', 'vault', 'pki', 'tls', 'istio', 'kubernetes', 'cloudflare-tunnel']
 ---

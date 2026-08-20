@@ -3,6 +3,7 @@ title: 'Spring Cloud Gateway 라우팅을 배포 없이 갱신하는 흐름'
 description: '동적으로 생성된 대기열 서버를 Eureka에 등록하고, Redis에 저장한 route 정보를 Gateway에 반영하는 흐름을 정리했다.'
 category: 'Network'
 pubDate: '2024-10-27'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['spring-cloud-gateway', 'eureka', 'route-locator', 'redis', 'fqs']
 ---

@@ -3,6 +3,7 @@ title: 'Jenkins CI/CD가 느릴 때, executor부터 늘리지 않고 계측부�
 description: 'stage별 지표를 남긴 뒤 Jenkins 역할을 분리하고, Backend·Frontend·LLM Docker build 병목을 서로 다른 조건으로 검증한 기록.'
 category: 'Performance'
 pubDate: '2026-07-27'
+createdAt: '2026-07-29T00:00:43+09:00'
 tags: ['jenkins', 'ci-cd', 'docker', 'buildkit', 'harbor', 'performance']
 ---
 

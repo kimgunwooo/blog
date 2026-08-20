@@ -3,6 +3,7 @@ title: 'S3, MediaConvert, CloudFront로 영상 처리 파이프라인을 설계�
 description: 'Presigned URL 업로드부터 MediaConvert 변환, SQS 상태 이벤트, CloudFront 전달까지 영상 처리 경계를 정리했다.'
 category: 'Cloud'
 pubDate: '2024-08-11'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['aws', 's3', 'mediaconvert', 'cloudfront', 'lambda', 'sqs', 'video']
 ---

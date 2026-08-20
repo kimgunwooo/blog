@@ -3,6 +3,7 @@ title: 'Docker 이미지와 컨테이너는 어떻게 다른가'
 description: 'docker run을 실행했을 때 image, layer, writable layer, network, process가 어떤 순서로 연결되는지 정리했다.'
 category: 'Docker'
 pubDate: '2026-07-07'
+createdAt: '2026-07-22T13:49:49+09:00'
 tags: ['docker', 'container', 'image', 'layer']
 ---
 

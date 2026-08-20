@@ -39,7 +39,12 @@ const { posts, layout = 'grid', maxTags = 3, showCategory = true } = Astro.props
 				<div class="post-card-copy">
 					<div class="post-card-meta">
 						{showCategory && <span>{post.data.category}</span>}
-						<FormattedDate date={post.data.pubDate} showTime={post.data.showTime} showSeconds={false} />
+						<FormattedDate
+							date={post.data.pubDate}
+							relativeDate={post.data.createdAt}
+							showTime={post.data.showTime}
+							showSeconds={false}
+						/>
 					</div>
 					<h2>{post.data.title}</h2>
 					<p class="post-card-description">{post.data.description}</p>

@@ -3,6 +3,7 @@ title: 'GitLab CI와 GitHub Actions로 ECS 배포 파이프라인을 구성해�
 description: 'Spring Boot 애플리케이션을 ECR에 push하고 ECS Service를 갱신하는 흐름을 GitLab CI와 GitHub Actions 기준으로 비교했다.'
 category: 'Cloud'
 pubDate: '2024-08-09'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['aws', 'ecs', 'ecr', 'gitlab-ci', 'github-actions', 'cicd']
 ---

@@ -3,6 +3,7 @@ title: 'MSA를 나누기 전에 먼저 봐야 할 운영 경계'
 description: '서비스를 나누면 설정, 라우팅, 인증, 발견, 트랜잭션 경계가 같이 늘어난다는 점을 Spring Cloud 기준으로 정리했다.'
 category: 'Network'
 pubDate: '2024-08-05'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['msa', 'spring-cloud', 'eureka', 'gateway', 'config', 'auth']
 ---

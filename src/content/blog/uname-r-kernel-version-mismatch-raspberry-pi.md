@@ -3,6 +3,7 @@ title: 'uname -r은 왜 예전 커널을 보여줄까: Raspberry Pi 커널 업�
 description: 'Raspberry Pi에서 Tailscale과 Kubernetes 네트워크가 동작하지 않을 때, 실행 중인 커널과 설치된 커널이 달랐던 원인과 복구 과정을 정리했다.'
 category: 'Kubernetes'
 pubDate: '2026-08-19'
+createdAt: '2026-08-20T16:07:22+09:00'
 tags: ['linux', 'kernel', 'raspberry-pi', 'tailscale', 'rke2', 'troubleshooting']
 ---
 

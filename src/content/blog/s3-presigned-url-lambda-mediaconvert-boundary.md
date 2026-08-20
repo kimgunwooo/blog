@@ -3,6 +3,7 @@ title: 'Presigned URL과 S3 이벤트로 영상 처리 책임을 나누기'
 description: '대용량 영상 업로드에서 서버가 파일을 직접 받지 않고, 업로드 권한과 비동기 변환 이벤트만 관리하도록 나눈 기준을 정리했다.'
 category: 'Cloud'
 pubDate: '2024-08-02'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['aws', 's3', 'presigned-url', 'lambda', 'mediaconvert', 'multipart-upload']
 ---

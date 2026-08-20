@@ -3,6 +3,7 @@ title: 'Terraform Docker Provider 실습: plan, state, drift를 로컬에서 확
 description: 'HashiCorp Docker Provider 튜토리얼 흐름을 따라 Nginx container를 선언하고, Colima socket 설정, state 확인, Docker CLI로 만든 drift 복구, destroy까지 검증했다.'
 category: 'Automation'
 pubDate: '2026-07-29T14:19:40+09:00'
+createdAt: '2026-07-29T14:19:40+09:00'
 showTime: true
 tags: ['terraform', 'docker', 'iac', 'state', 'drift', 'colima']
 ---

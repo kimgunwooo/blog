@@ -3,6 +3,7 @@ title: 'Spring Boot AutoConfiguration으로 FQS SDK 도입 비용 줄이기'
 description: 'B2B 대기열 서비스를 외부 개발자가 쉽게 붙일 수 있도록 Spring Boot AutoConfiguration과 JitPack 배포를 적용한 기록이다.'
 category: 'Automation'
 pubDate: '2025-01-25'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['fqs', 'spring-boot', 'autoconfiguration', 'sdk', 'jitpack']
 ---

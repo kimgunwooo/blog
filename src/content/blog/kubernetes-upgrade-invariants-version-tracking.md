@@ -3,6 +3,7 @@ title: 'Kubernetes 업그레이드의 불변 원칙과 버전 확인 방법'
 description: 'kubeadm, RKE2, Kubespray, EKS의 업그레이드 방식은 달라도 공통으로 지켜야 하는 원칙과, 매일 공식 홈페이지를 보지 않고 버전을 감시하는 운영 방법을 정리했다.'
 category: 'Kubernetes'
 pubDate: '2026-08-17'
+createdAt: '2026-08-19T08:45:43+09:00'
 tags: ['kubernetes', 'rke2', 'kubespray', 'eks', 'upgrade', 'version-management', 'devops']
 ---
 

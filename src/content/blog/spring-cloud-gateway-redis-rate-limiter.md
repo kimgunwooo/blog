@@ -3,6 +3,7 @@ title: 'Spring Cloud Gateway RateLimiter는 Redis에서 무엇을 기록할까'
 description: 'Spring Cloud Gateway의 RequestRateLimiter가 key, token bucket, Redis Lua script로 요청을 제한하는 흐름을 정리했다.'
 category: 'Network'
 pubDate: '2025-04-04'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['spring-cloud-gateway', 'redis', 'rate-limiter', 'token-bucket']
 ---

@@ -105,6 +105,58 @@ const structuredData = article
 	})();
 </script>
 
+<script is:inline>
+	(() => {
+		const minute = 60 * 1000;
+		const hour = 60 * minute;
+		const day = 24 * hour;
+		const relativeFormatter = new Intl.RelativeTimeFormat('ko-KR', { numeric: 'always' });
+
+		const updateRelativeTimes = () => {
+			document.querySelectorAll('time[data-relative-time]').forEach((element) => {
+				const value = element.getAttribute('data-relative-time');
+				const absoluteLabel = element.getAttribute('data-absolute-label');
+				if (!value || !absoluteLabel) return;
+
+				const elapsed = Date.now() - new Date(value).getTime();
+				if (elapsed < 0 || elapsed >= 365 * day) {
+					element.textContent = absoluteLabel;
+					return;
+				}
+				if (elapsed < minute) {
+					element.textContent = '방금 전';
+					return;
+				}
+
+				const [unit, size] = elapsed >= 30 * day
+					? ['month', 30 * day]
+					: elapsed >= 7 * day
+						? ['week', 7 * day]
+						: elapsed >= day
+							? ['day', day]
+							: elapsed >= hour
+								? ['hour', hour]
+								: ['minute', minute];
+				const amount = Math.floor(elapsed / size);
+				element.textContent = relativeFormatter.format(-amount, unit);
+			});
+		};
+
+		const startRelativeTimeUpdates = () => {
+			updateRelativeTimes();
+			window.clearInterval(window.__relativeTimeInterval);
+			window.__relativeTimeInterval = window.setInterval(updateRelativeTimes, minute);
+		};
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', startRelativeTimeUpdates, { once: true });
+		} else {
+			startRelativeTimeUpdates();
+		}
+		document.addEventListener('astro:page-load', updateRelativeTimes);
+	})();
+</script>
+
 <Font cssVariable="--font-atkinson" preload />
 
 <!-- Canonical URL -->

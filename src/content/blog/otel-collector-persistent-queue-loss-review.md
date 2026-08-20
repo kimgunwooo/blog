@@ -3,6 +3,7 @@ title: 'OpenTelemetry Collector 장애에서 로그는 어디까지 복구되는
 description: 'Agent/Gateway 재시작, Loki 중단, filelog offset, queue overflow, retry timeout을 분리해 persistent queue의 보호 범위와 한계를 검증했다.'
 category: 'Observability'
 pubDate: '2026-07-24'
+createdAt: '2026-07-22T13:49:49+09:00'
 tags: ['opentelemetry', 'otel-collector', 'grafana-lgtm', 'loki', 'persistent-queue', 'resilience']
 ---
 

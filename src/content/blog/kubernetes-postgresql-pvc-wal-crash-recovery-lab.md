@@ -3,6 +3,7 @@ title: 'Kubernetes PostgreSQL에서 PVC는 어디까지 지켜주는가: WAL, ch
 description: 'StatefulSet과 local-path PVC 위의 PostgreSQL 17에서 PGDATA, WAL flush, checkpoint, Pod 재생성, immediate shutdown 뒤 crash recovery의 경계를 직접 확인했다.'
 category: 'Database'
 pubDate: '2026-08-01T01:05:00+09:00'
+createdAt: '2026-08-01T01:05:00+09:00'
 showTime: true
 tags: ['kubernetes', 'postgresql', 'pvc', 'statefulset', 'wal', 'checkpoint', 'crash-recovery']
 ---

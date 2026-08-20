@@ -3,6 +3,7 @@ title: 'Promtail에서 Alloy로 Pod 로그 수집을 옮길 때: API 수집, 권
 description: 'Promtail의 hostPath 파일 tailing을 Alloy의 Kubernetes API 기반 수집으로 교체했다. 최소 RBAC, label 유지, 중복 수집, API throttling, 오래된 로그 거부까지 실제 전환 과정에서 확인한 기준을 정리한다.'
 category: 'Observability'
 pubDate: '2026-08-02T06:00:00+09:00'
+createdAt: '2026-08-02T06:00:00+09:00'
 showTime: true
 tags: ['grafana-alloy', 'promtail', 'loki', 'kubernetes', 'rbac', 'log-collection', 'observability']
 ---

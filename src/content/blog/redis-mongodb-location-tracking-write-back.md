@@ -3,6 +3,7 @@ title: '위치 추적 API에서 Redis Write Back을 적용한 이유'
 description: '3초 단위 좌표 저장/조회 요청에서 MongoDB 병목을 Redis cache와 write back 구조로 줄인 과정을 정리했다.'
 category: 'Performance'
 pubDate: '2024-06-03'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['redis', 'mongodb', 'cache', 'write-back', 'locust']
 ---

@@ -3,6 +3,7 @@ title: 'Docker bridge 네트워크: eth0, veth, gateway, DNS가 연결되는 방
 description: 'Docker 컨테이너의 network namespace부터 veth, docker0, user-defined bridge, gateway, ARP, embedded DNS, port publishing까지 한 호스트 안의 네트워크 흐름을 정리했다.'
 category: 'Docker'
 pubDate: '2026-08-08'
+createdAt: '2026-08-09T01:16:24+09:00'
 tags: ['docker', 'network', 'bridge', 'container-networking', 'arp', 'dns']
 ---
 

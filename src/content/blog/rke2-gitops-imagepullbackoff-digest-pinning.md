@@ -3,6 +3,7 @@ title: 'GitOps 배포에서 ImagePullBackOff를 이미지 문제가 아니라 �
 description: '개인 RKE2 홈 클러스터에서 image build, promotion PR, Argo CD sync의 순서를 분리하고 tag@digest pinning과 rollout 기준을 적용한 기록.'
 category: 'Kubernetes'
 pubDate: '2026-07-27'
+createdAt: '2026-07-22T13:49:49+09:00'
 tags: ['rke2', 'argocd', 'gitops', 'imagepullbackoff', 'digest-pinning']
 ---
 

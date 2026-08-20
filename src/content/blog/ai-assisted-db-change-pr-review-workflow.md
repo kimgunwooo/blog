@@ -3,6 +3,7 @@ title: 'AI가 만든 DB 변경 초안을 바로 적용하지 않고 PR 검토 �
 description: '반복되는 DDL·함수 변경 요청을 Codex/Claude skill과 Liquibase template로 정리하고, 생성·검토·적용 책임을 분리한 기록.'
 category: 'Automation'
 pubDate: '2026-07-27'
+createdAt: '2026-07-29T00:00:43+09:00'
 tags: ['ai-assisted', 'liquibase', 'database-change', 'git-pr', 'automation']
 ---
 

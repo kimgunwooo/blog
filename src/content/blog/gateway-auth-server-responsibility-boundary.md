@@ -3,6 +3,7 @@ title: 'Gateway와 Auth Server 사이에서 인증 책임을 어디까지 나눌
 description: 'MSA에서 JWT 검증을 Gateway에서 끝낼지, Auth Server와 User Server까지 나눌지 고민한 기준을 정리했다.'
 category: 'Network'
 pubDate: '2024-09-09'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['msa', 'gateway', 'auth-server', 'jwt', 'redis', 'spring-security']
 ---

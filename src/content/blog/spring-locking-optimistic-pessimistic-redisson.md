@@ -3,6 +3,7 @@ title: '낙관적 락, 비관적 락, Redis 분산락을 언제 다르게 봐야
 description: '재고 차감 예제를 기준으로 JPA optimistic lock, pessimistic lock, Redisson lock의 선택 기준을 정리했다.'
 category: 'Database'
 pubDate: '2025-02-11'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['database', 'jpa', 'locking', 'redis', 'redisson']
 ---

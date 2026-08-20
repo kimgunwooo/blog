@@ -3,6 +3,7 @@ title: 'Oracle에서 PostgreSQL로 옮길 때, SQL 변환보다 변경 이력을
 description: 'Oracle 11g 기반 업무 시스템을 PostgreSQL 17로 이관하며 SQL 호환성, MyBatis·FreeMarker, Liquibase·Jenkins 변경 추적을 함께 정리한 기록.'
 category: 'Database'
 pubDate: '2026-07-27'
+createdAt: '2026-07-29T00:00:43+09:00'
 tags: ['postgresql', 'oracle', 'liquibase', 'database-migration', 'jenkins']
 ---
 

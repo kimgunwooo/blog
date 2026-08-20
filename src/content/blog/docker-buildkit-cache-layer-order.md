@@ -3,6 +3,7 @@ title: 'Docker BuildKit cache는 왜 Dockerfile 순서에 민감할까'
 description: 'build context, LLB graph, cache key 관점에서 Dockerfile 순서가 CI 빌드 시간을 바꾸는 이유를 정리했다.'
 category: 'Docker'
 pubDate: '2026-07-06'
+createdAt: '2026-07-22T13:49:49+09:00'
 tags: ['docker', 'buildkit', 'cache', 'dockerfile']
 ---
 

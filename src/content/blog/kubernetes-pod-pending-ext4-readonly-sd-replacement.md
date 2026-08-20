@@ -3,6 +3,7 @@ title: 'Pod Pending 뒤에서 발견한 ext4 오류: raspi-02의 SD 카드를 �
 description: 'Kubernetes Pod Pending 알림을 따라 RKE2 노드의 kubelet·containerd·ext4 상태를 좁혀 보고, 오프라인 fsck 이후에도 SD 카드 교체를 선택한 과정을 정리했다.'
 category: 'Kubernetes'
 pubDate: '2026-08-09'
+createdAt: '2026-08-16T21:34:19+09:00'
 tags: ['kubernetes', 'rke2', 'ext4', 'filesystem', 'sd-card', 'alertmanager', 'troubleshooting']
 ---
 

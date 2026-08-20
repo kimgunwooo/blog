@@ -3,6 +3,7 @@ title: 'Raspberry Pi 4에 Kubespray로 Kubernetes를 올릴 때 막힌 지점들
 description: 'Ubuntu 22.04, ARM 환경, DNS, CNI, CoreDNS 문제를 Kubespray 설치 흐름 기준으로 다시 정리했다.'
 category: 'Kubernetes'
 pubDate: '2025-04-12'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['kubernetes', 'kubespray', 'raspberry-pi', 'ansible', 'homelab']
 ---

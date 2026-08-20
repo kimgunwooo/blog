@@ -3,6 +3,7 @@ title: 'Prometheus, Grafana, Loki로 Spring Boot 관측 기준 잡기'
 description: 'Actuator, Prometheus scrape, Grafana dashboard, Slack alert, Loki log 수집을 운영 기준으로 다시 정리했다.'
 category: 'Observability'
 pubDate: '2024-08-12'
+createdAt: '2026-07-23T11:25:24+09:00'
 updatedDate: '2026-07-23'
 tags: ['prometheus', 'grafana', 'loki', 'spring-boot', 'alerting']
 ---

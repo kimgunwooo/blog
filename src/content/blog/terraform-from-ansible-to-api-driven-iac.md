@@ -3,6 +3,7 @@ title: 'Terraform은 EC2 생성기가 아니었다: Ansible 사용자 관점의 
 description: 'SSH로 기존 서버를 구성하던 Ansible 경험에서 출발해 Terraform의 provider, state, plan/apply, Docker·Kubernetes·GitOps 소유권 경계를 정리했다.'
 category: 'Automation'
 pubDate: '2026-07-29T11:54:54+09:00'
+createdAt: '2026-07-29T11:54:54+09:00'
 showTime: true
 tags: ['terraform', 'iac', 'hcl', 'ansible', 'docker', 'kubernetes', 'gitops']
 ---

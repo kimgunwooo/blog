@@ -3,6 +3,7 @@ title: '주소창에 도메인을 입력하면 어디로 가나: NSS, DNS resolv
 description: 'Linux의 NSS와 /etc/hosts에서 시작해 stub·recursive·authoritative DNS, TLS, Cloudflare Tunnel까지 URL 요청이 이동하는 경로를 홈 클러스터 관점에서 정리했다.'
 category: 'Network'
 pubDate: '2026-08-04T05:00:00+09:00'
+createdAt: '2026-08-04T05:00:00+09:00'
 showTime: true
 tags: ['dns', 'nss', 'stub-resolver', 'recursive-resolver', 'systemd-resolved', 'tls', 'cloudflare-tunnel', 'network']
 ---

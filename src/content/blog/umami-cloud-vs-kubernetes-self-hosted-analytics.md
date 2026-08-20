@@ -3,6 +3,7 @@ title: '블로그 방문자 통계를 Kubernetes에 올리려다 Umami Cloud를 
 description: '방문자 수를 보려고 Umami와 PostgreSQL을 홈 Kubernetes에 올리려다 Umami Cloud로 방향을 바꾼 이유를 정리했다.'
 category: 'Observability'
 pubDate: '2026-08-19'
+createdAt: '2026-08-19T08:45:43+09:00'
 tags: ['umami', 'analytics', 'kubernetes', 'postgresql', 'cloud', 'gitops']
 ---
 

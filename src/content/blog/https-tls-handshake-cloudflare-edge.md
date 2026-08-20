@@ -3,6 +3,7 @@ title: 'TCP 다음에 TLS가 필요한 이유: HTTPS handshake와 Cloudflare Edg
 description: 'TCP 3-way handshake 이후 TLS 1.3이 서버를 인증하고 세션 키를 만드는 과정을 정리하고, 일반적인 HTTPS와 Cloudflare Tunnel에서 TLS가 어느 구간에 맺어지는지 비교했다.'
 category: 'Network'
 pubDate: '2026-08-08T23:49:47+09:00'
+createdAt: '2026-08-08T23:49:47+09:00'
 showTime: true
 tags: ['https', 'tls', 'ssl', 'tcp', 'certificate', 'cloudflare', 'network']
 ---
