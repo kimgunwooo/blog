@@ -34,6 +34,8 @@ GitHub Release는 단순한 Git tag가 아니라, 운영기록·컨테이너 ima
 10. Argo CD가 `home-ops`의 `blog` Application을 통해 변경을 sync한다.
 11. Discord에서 `on-deployed`, `on-sync-failed`, `on-health-degraded` 결과를 확인한다.
 
+GitHub Release 생성 단계는 저장소 Actions secret `RELEASE_TOKEN`을 사용한다. GHCR image push와 `main` manifest promotion에는 `GITHUB_TOKEN`을 사용하고, Release API에는 workflow 파일 변경까지 처리할 수 있는 별도 token을 사용한다. token 값은 Git에 저장하지 않는다.
+
 Release workflow는 `release: published` 이벤트를 사용하지 않는다. tag push 하나만 입력으로 사용하므로, workflow가 Release를 자동 생성해도 중복 이미지 빌드가 발생하지 않는다.
 
 ## main push와 Release의 차이
