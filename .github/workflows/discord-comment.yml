@@ -1,0 +1,71 @@
+name: Notify Discord about blog comments
+
+on:
+  discussion_comment:
+    types: [created]
+
+permissions: {}
+
+env:
+  BLOG_ORIGIN: https://blog.kwl4b.com
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send comment notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TITLE: ${{ github.event.discussion.title }}
+          AUTHOR: ${{ github.event.comment.user.login }}
+          AUTHOR_URL: ${{ github.event.comment.user.html_url }}
+          BODY: ${{ github.event.comment.body }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+          DISCUSSION_URL: ${{ github.event.discussion.html_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$TITLE" == blog/* ]]; then
+            slug="${TITLE#blog/}"
+            blog_url="${BLOG_ORIGIN%/}/blog/${slug#/}"
+          else
+            blog_url="$DISCUSSION_URL"
+          fi
+
+          payload="$(jq -n \
+            --arg title "$TITLE" \
+            --arg author "$AUTHOR" \
+            --arg author_url "$AUTHOR_URL" \
+            --arg body "$BODY" \
+            --arg blog_url "$blog_url" \
+            --arg comment_url "$COMMENT_URL" \
+            '{
+              username: "blog-comments",
+              allowed_mentions: {parse: []},
+              embeds: [{
+                title: ("💬 " + $title),
+                url: $blog_url,
+                description: (if ($body | length) > 3800 then ($body[0:3800] + "\n…") else $body end),
+                color: 3447003,
+                fields: [
+                  {
+                    name: "작성자",
+                    value: ("[" + $author + "](" + $author_url + ")"),
+                    inline: true
+                  },
+                  {
+                    name: "링크",
+                    value: ("[블로그 글 열기](" + $blog_url + ") · [댓글 보기](" + $comment_url + ")"),
+                    inline: true
+                  }
+                ]
+              }]
+            }')"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "${DISCORD_WEBHOOK_URL}?wait=true" \
+            --header "Content-Type: application/json" \
+            --data "$payload"
