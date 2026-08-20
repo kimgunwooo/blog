@@ -1,28 +1,9 @@
-name: Publish image
+name: Publish release image
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - ".dockerignore"
-      - ".github/workflows/publish.yml"
-      - "Dockerfile"
-      - "astro.config.mjs"
-      - "package.json"
-      - "package-lock.json"
-      - "public/**"
-      - "src/**"
-      - "deploy/k8s/**"
-  workflow_dispatch:
-    inputs:
-      image_tag:
-        description: Image tag to publish, for example v0.1.0
-        required: true
-        default: v0.1.0
-  release:
-    types:
-      - published
+    tags:
+      - "v*.*.*"
 
 permissions:
   contents: write
@@ -32,15 +13,35 @@ env:
   IMAGE_NAME: ghcr.io/kimgunwooo/blog
 
 jobs:
-  build:
-    name: Build and push GHCR image
+  release:
+    name: Build, release, and promote
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.sha }}
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Validate release tag and ops log
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected a semantic version tag like v0.12.0, got: $tag" >&2
+            exit 1
+          fi
+
+          if ! rg -q "version: '$tag'" src/pages/ops-log.astro; then
+            echo "ops-log.astro does not contain an entry for $tag" >&2
+            exit 1
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -55,38 +56,39 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Resolve image tag
-        id: image
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            tag="${{ inputs.image_tag }}"
-          elif [ "${{ github.event_name }}" = "release" ]; then
-            tag="${{ github.event.release.tag_name }}"
-          else
-            tag="git-${GITHUB_SHA::12}"
-          fi
-
-          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
-          echo "ref=${IMAGE_NAME}:${tag}" >> "$GITHUB_OUTPUT"
-
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.image.outputs.ref }}
+          tags: ${{ env.IMAGE_NAME }}:${{ steps.release.outputs.tag }}
 
-      - name: Checkout main for release promotion
-        if: github.event_name == 'release'
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub Release $RELEASE_TAG already exists."
+          else
+            gh release create "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$RELEASE_TAG" \
+              --generate-notes
+          fi
+
+      - name: Checkout main for manifest promotion
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
       - name: Update Argo CD image tag
-        if: github.event_name != 'workflow_dispatch'
         shell: bash
         run: |
           python3 - <<'PY'
@@ -95,7 +97,7 @@ jobs:
           from pathlib import Path
 
           path = Path("deploy/k8s/kustomization.yaml")
-          image_tag = os.environ["IMAGE_TAG"]
+          image_tag = os.environ["RELEASE_TAG"]
           text = path.read_text()
           updated = re.sub(r"newTag: .+", f"newTag: {image_tag}", text, count=1)
           if updated == text:
@@ -103,10 +105,9 @@ jobs:
           path.write_text(updated)
           PY
         env:
-          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
 
       - name: Commit Argo CD manifest update
-        if: github.event_name != 'workflow_dispatch'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
@@ -118,7 +119,6 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: update platform ops log image [skip ci]"
-          target_branch="${{ github.event_name == 'release' && 'main' || github.ref_name }}"
-          git pull --rebase origin "${target_branch}"
-          git push origin "HEAD:${target_branch}"
+          git commit -m "chore: promote blog to ${{ steps.release.outputs.tag }} [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
