@@ -114,8 +114,11 @@ jobs:
           text = path.read_text()
           updated = re.sub(r"newTag: .+", f"newTag: {image_tag}", text, count=1)
           if updated == text:
-              raise SystemExit("newTag was not updated")
-          path.write_text(updated)
+              if not re.search(r"newTag: .+", text):
+                  raise SystemExit("newTag was not found")
+              print(f"newTag is already {image_tag}")
+          else:
+              path.write_text(updated)
           PY
         env:
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
