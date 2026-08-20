@@ -7,4 +7,4 @@ resources:
   - service.yaml
 images:
   - name: ghcr.io/kimgunwooo/blog
-    newTag: git-388763a9c5cb
+    newTag: git-giscus-388763a9c5cb
