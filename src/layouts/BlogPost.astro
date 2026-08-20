@@ -476,18 +476,6 @@ const {
 				padding-top: 1.5rem;
 				border-top: 2px solid var(--accent);
 			}
-			.comments__eyebrow {
-				margin: 0 0 0.25rem;
-				color: var(--accent);
-				font-size: 0.75rem;
-				font-weight: 800;
-				letter-spacing: 0.08em;
-				text-transform: uppercase;
-			}
-			.comments h2 {
-				margin: 0 0 1rem;
-				font-size: 1.25rem;
-			}
 			.giscus {
 				min-height: 8rem;
 			}
@@ -779,31 +767,11 @@ const {
 								}
 							</div>
 							<slot />
-							<section class="comments" data-toc-ignore aria-labelledby="comments-title">
-								<p class="comments__eyebrow">Community</p>
-								<h2 id="comments-title">댓글</h2>
-								<div class="giscus"></div>
-							</section>
-							<script
-								is:inline
-								src="https://giscus.app/client.js"
-								data-repo="kimgunwooo/blog"
-								data-repo-id="R_kgDOTfx2LQ"
-								data-category="Announcements"
-								data-category-id="DIC_kwDOTfx2Lc4DDx_F"
-								data-mapping="pathname"
-								data-strict="1"
-								data-reactions-enabled="1"
-								data-emit-metadata="0"
-								data-input-position="bottom"
-								data-theme="noborder_light"
-								data-lang="ko"
-								data-loading="lazy"
-								crossorigin="anonymous"
-								async
-							></script>
-							<script is:inline>
-								const giscusContainer = document.querySelector('.giscus');
+			<section class="comments" data-toc-ignore aria-label="댓글">
+				<div class="giscus"></div>
+			</section>
+			<script is:inline>
+				const giscusContainer = document.querySelector('.giscus');
 								let giscusFrame;
 								const syncGiscusTheme = () => {
 									const frame = giscusContainer?.querySelector('iframe.giscus-frame');
@@ -834,7 +802,29 @@ const {
 									childList: true,
 									subtree: true,
 								});
-									syncGiscusTheme();
+								syncGiscusTheme();
+
+								const giscusScript = document.createElement('script');
+								giscusScript.src = 'https://giscus.app/client.js';
+								giscusScript.async = true;
+								giscusScript.crossOrigin = 'anonymous';
+								Object.entries({
+									'data-repo': 'kimgunwooo/blog',
+									'data-repo-id': 'R_kgDOTfx2LQ',
+									'data-category': 'Announcements',
+									'data-category-id': 'DIC_kwDOTfx2Lc4DDx_F',
+									'data-mapping': 'pathname',
+					'data-strict': '1',
+					'data-reactions-enabled': '1',
+					'data-input-position': 'bottom',
+									'data-theme':
+										document.documentElement.dataset.theme === 'dark'
+											? 'noborder_dark'
+											: 'noborder_light',
+									'data-lang': 'ko',
+									'data-loading': 'lazy',
+								}).forEach(([name, value]) => giscusScript.setAttribute(name, value));
+								document.body.append(giscusScript);
 							</script>
 							{
 								relatedPosts.length > 0 && (
