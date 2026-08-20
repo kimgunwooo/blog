@@ -60,34 +60,41 @@ Dockerfile              정적 사이트 runtime image
 
 ## 배포 흐름
 
-`main`에 변경이 들어오면 GitHub Actions가 다음 작업을 수행합니다.
+`main` push는 운영 배포가 아니라 검증만 수행합니다. 실제 운영 배포는 `vX.Y.Z` SemVer tag를 push할 때 시작됩니다.
 
-1. Astro 정적 사이트를 빌드합니다.
-2. `linux/amd64`, `linux/arm64` 이미지를 GHCR에 push합니다.
-3. 이미지 tag를 `deploy/k8s/kustomization.yaml`에 기록합니다.
-4. Argo CD가 `home-ops`에서 관리하는 Application을 통해 desired state를 읽습니다.
-5. Argo CD가 `blog` namespace에 Deployment와 Service를 sync합니다.
-6. 배포 성공·실패·health 상태를 Discord로 알립니다.
+1. PR 또는 `main` push에서 Astro 정적 사이트와 Kubernetes manifest를 검증합니다.
+2. 배포할 변경과 같은 커밋에 `src/pages/ops-log.astro`의 버전 기록을 추가합니다.
+3. 준비된 커밋에 `v0.12.0` 같은 annotated tag를 만들고 push합니다.
+4. GitHub Actions가 tag와 운영기록 버전을 확인한 뒤 `linux/amd64`, `linux/arm64` 이미지를 같은 tag로 GHCR에 push합니다.
+5. workflow가 같은 tag의 GitHub Release를 자동으로 만듭니다.
+6. workflow가 `deploy/k8s/kustomization.yaml`의 `newTag`를 Release tag로 바꾸고 `main`에 promotion commit을 남깁니다.
+7. Argo CD가 `home-ops`에서 관리하는 Application을 통해 desired state를 읽고 `blog` namespace에 sync합니다.
+8. 배포 성공·실패·health 상태를 Discord로 알립니다.
 
-일반 push는 `git-<commit>` 이미지를 사용합니다. 정식 버전은 GitHub Release tag를 이미지 tag로 사용합니다.
+따라서 코드 커밋, GitHub Release, GHCR image, Kubernetes desired state가 모두 같은 버전 문자열을 가리킵니다.
 
 ## Release와 운영 기록
 
-운영 기록과 GitHub Release는 같은 버전 문자열을 사용합니다.
+운영 기록과 GitHub Release는 같은 SemVer 버전 문자열을 사용합니다.
 
 ```text
-운영기록 v0.11  <->  GitHub Release v0.11  <->  GHCR image :v0.11
+운영기록 v0.12.0  <->  GitHub Release v0.12.0  <->  GHCR image :v0.12.0
 ```
 
-Release를 만들 때는 다음 순서를 따릅니다.
+버전은 최신 GitHub Release를 기준으로 올립니다.
 
-1. 코드 변경과 `src/pages/ops-log.astro` 운영기록을 함께 수정합니다.
-2. `npm run build`로 정적 빌드를 확인합니다.
-3. `main`에 변경을 push합니다.
-4. GitHub에서 운영기록과 같은 이름의 Release를 발행합니다. 예: `v0.11`
-5. Release workflow가 해당 tag의 이미지를 GHCR에 push합니다.
-6. workflow가 `deploy/k8s/kustomization.yaml`의 `newTag`를 같은 Release tag로 승격합니다.
-7. Argo CD sync와 Discord 알림으로 실제 배포 결과를 확인합니다.
+- patch: `v0.12.0` → `v0.12.1` — 버그, 문서, 운영 설정 수정
+- minor: `v0.12.0` → `v0.13.0` — 기존 호환성을 유지하는 기능 추가
+- major: `v0.12.0` → `v1.0.0` — 호환성을 깨는 구조 변경 또는 안정화 기준점
+
+예를 들어 다음처럼 tag를 push하면 나머지는 workflow가 진행합니다.
+
+```sh
+git tag -a v0.12.0 -m "v0.12.0"
+git push origin v0.12.0
+```
+
+`v0.9`, `v0.10`, `v0.11`은 이 규칙으로 전환하기 전의 운영기록이며, `v0.12.0`부터 세 자리 SemVer를 사용합니다.
 
 세부 규칙은 [docs/release-workflow.md](docs/release-workflow.md)에 정리했습니다.
 

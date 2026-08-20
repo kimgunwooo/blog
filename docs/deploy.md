@@ -27,18 +27,20 @@ kubectl kustomize deploy/k8s
 
 ## 이미지 tag
 
-GitHub Actions는 다음 기준으로 이미지를 만든다.
+GitHub Actions는 `vX.Y.Z` tag push에서만 운영 이미지를 만든다. 예를 들어 `v0.12.0` tag를 push하면 다음 이미지가 생성된다.
 
-- `main` push: `git-<commit>`
-- GitHub Release 발행: Release tag 그대로 사용. 예: `v0.11`
-- 수동 `workflow_dispatch`: 입력한 tag 사용. 일회성 이미지 검증 용도
+```text
+ghcr.io/kimgunwooo/blog:v0.12.0
+```
 
-`main` push 또는 Release 발행 후 workflow가 `deploy/k8s/kustomization.yaml`의 `newTag`를 변경하고 같은 저장소의 `main`에 commit한다.
+PR과 `main` push에서는 사이트 빌드와 manifest 렌더링만 검증한다. Release workflow는 tag 커밋의 코드와 운영기록 버전을 확인한 뒤, 같은 tag로 이미지를 push하고 GitHub Release를 자동 생성한다.
+
+그 다음 workflow가 `deploy/k8s/kustomization.yaml`의 `newTag`를 변경하고 같은 저장소의 `main`에 promotion commit을 만든다.
 
 ```yaml
 images:
   - name: ghcr.io/kimgunwooo/blog
-    newTag: v0.11
+    newTag: v0.12.0
 ```
 
 Kustomize는 이 값을 사용해 Deployment의 `image` tag를 최종 manifest에 반영한다. Argo CD는 `home-ops` Application의 source revision을 기준으로 이 manifest를 읽고 sync한다.
