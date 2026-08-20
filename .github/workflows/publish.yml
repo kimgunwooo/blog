@@ -20,6 +20,9 @@ on:
         description: Image tag to publish, for example v0.1.0
         required: true
         default: v0.1.0
+  release:
+    types:
+      - published
 
 permissions:
   contents: write
@@ -36,6 +39,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -56,8 +61,8 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             tag="${{ inputs.image_tag }}"
-          elif [[ "${GITHUB_REF_NAME}" == v* ]]; then
-            tag="${GITHUB_REF_NAME}"
+          elif [ "${{ github.event_name }}" = "release" ]; then
+            tag="${{ github.event.release.tag_name }}"
           else
             tag="git-${GITHUB_SHA::12}"
           fi
@@ -72,6 +77,13 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.image.outputs.ref }}
+
+      - name: Checkout main for release promotion
+        if: github.event_name == 'release'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: Update Argo CD image tag
         if: github.event_name != 'workflow_dispatch'
@@ -107,5 +119,6 @@ jobs:
           fi
 
           git commit -m "chore: update platform ops log image [skip ci]"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          target_branch="${{ github.event_name == 'release' && 'main' || github.ref_name }}"
+          git pull --rebase origin "${target_branch}"
+          git push origin "HEAD:${target_branch}"
