@@ -11,7 +11,17 @@ type Props = CollectionEntry<'blog'>['data'] & {
 	relatedPosts?: CollectionEntry<'blog'>[];
 };
 
-const { title, description, pubDate, updatedDate, showTime = false, heroImage, tags = [], relatedPosts = [] } = Astro.props;
+const {
+	title,
+	description,
+	pubDate,
+	createdAt,
+	updatedDate,
+	showTime = false,
+	heroImage,
+	tags = [],
+	relatedPosts = [],
+} = Astro.props;
 ---
 
 <html lang="ko">
@@ -747,7 +757,7 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 						<div class="prose" data-pagefind-body>
 							<div class="title">
 								<div class="date">
-									<FormattedDate date={pubDate} showTime={showTime} />
+									<FormattedDate date={pubDate} relativeDate={createdAt} showTime={showTime} />
 									{
 										updatedDate && (
 											<div class="last-updated-on">
@@ -841,9 +851,10 @@ const { title, description, pubDate, updatedDate, showTime = false, heroImage, t
 												>
 													<span class="related-posts__meta">
 														{relatedPost.data.category} ·{' '}
-															<FormattedDate
-																date={relatedPost.data.pubDate}
-																showTime={relatedPost.data.showTime}
+																	<FormattedDate
+																		date={relatedPost.data.pubDate}
+																		relativeDate={relatedPost.data.createdAt}
+																		showTime={relatedPost.data.showTime}
 															/>
 													</span>
 													<strong>{relatedPost.data.title}</strong>
