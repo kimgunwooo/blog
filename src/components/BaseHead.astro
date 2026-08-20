@@ -3,14 +3,13 @@
 // all pages through the use of the <BaseHead /> component.
 import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
-import FallbackImage from '../assets/blog-placeholder-1.jpg';
 import { PROFILE_LINKS, SITE_TITLE } from '../consts';
 import { Font } from 'astro:assets';
 
 interface Props {
 	title: string;
 	description: string;
-	image?: ImageMetadata;
+	image?: ImageMetadata | string;
 	article?: boolean;
 	pubDate?: Date;
 	updatedDate?: Date;
@@ -22,14 +21,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const {
 	title,
 	description,
-	image = FallbackImage,
+	image = '/profile-assets/devops-journey.png',
 	article = false,
 	pubDate,
 	updatedDate,
 	tags = [],
 } = Astro.props;
 const pageTitle = title === SITE_TITLE || title.includes(SITE_TITLE) ? title : `${title} | ${SITE_TITLE}`;
-const imageURL = new URL(image.src, Astro.url).href;
+const imageURL = new URL(typeof image === 'string' ? image : image.src, Astro.url).href;
 const structuredData = article
 	? {
 			'@context': 'https://schema.org',

@@ -279,15 +279,15 @@ RKE2 설치 방식이 RPM인지, binary인지에 따라 패키지 확인 방법�
 
 ## 새 버전은 어떻게 발견할까?
 
-매일 Kubernetes 공식 홈페이지를 직접 확인할 필요는 없다. 운영에서는 **발견(discovery)**과 **결정(decision)**을 분리한다.
+매일 Kubernetes 공식 홈페이지를 직접 확인할 필요는 없다. 운영에서는 발견(discovery)과 결정(decision)을 분리한다.
 
 ```mermaid
 flowchart LR
   A["Release source"] --> B["Automated notification"]
   B --> C["Version inventory comparison"]
-  C --> D{ "Upgrade needed?" }
-  D -- "No" --> E["Record and wait"]
-  D -- "Yes" --> F["Staging test and change review"]
+  C --> D{"Upgrade needed?"}
+  D -->|No| E["Record and wait"]
+  D -->|Yes| F["Staging test and change review"]
   F --> G["Production rollout"]
 ```
 
