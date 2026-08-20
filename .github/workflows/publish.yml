@@ -36,7 +36,7 @@ jobs:
             exit 1
           fi
 
-          if ! rg -q "version: '$tag'" src/pages/ops-log.astro; then
+          if ! grep -Fq "version: '$tag'" src/pages/ops-log.astro; then
             echo "ops-log.astro does not contain an entry for $tag" >&2
             exit 1
           fi
