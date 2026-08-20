@@ -24,6 +24,8 @@ const { posts, layout = 'grid', maxTags = 3, showCategory = true } = Astro.props
 				class:list={['post-card', { 'has-thumbnail': thumbnail, 'no-thumbnail': !thumbnail }]}
 				href={`/blog/${post.id}/`}
 				data-post-item
+				data-umami-event="post-click"
+				data-umami-event-post={post.id}
 				data-title={post.data.title}
 				data-description={post.data.description}
 				data-category={post.data.category}

@@ -73,7 +73,13 @@ const requestFlow = [
 							<ol class="flow-journey" aria-label="블로그 글 전달 흐름">
 								{requestFlow.map((step, index) => (
 									<li class:list={{ 'is-active': index === 0 }}>
-										<button class="flow-node" type="button" data-flow-step={index}>
+										<button
+											class="flow-node"
+											type="button"
+											data-flow-step={index}
+											data-umami-event="request-flow-step"
+											data-umami-event-step={index + 1}
+										>
 											<span class="flow-node-dot" aria-hidden="true"></span>
 											<strong>{step.label}</strong>
 											<span>{step.place}</span>
@@ -101,7 +107,13 @@ const requestFlow = [
 					</div>
 					<PostCards posts={posts} layout="home" maxTags={0} />
 					<div class="home-posts-footer">
-						<a class="all-posts-link" href="/blog/">전체 글 보러가기 <span aria-hidden="true">→</span></a>
+						<a
+							class="all-posts-link"
+							href="/blog/"
+							data-umami-event="all-posts-cta"
+						>
+							전체 글 보러가기 <span aria-hidden="true">→</span>
+						</a>
 					</div>
 				</section>
 			</main>
@@ -473,6 +485,9 @@ const requestFlow = [
 			margin: 0;
 		}
 		.flow-detail {
+			position: relative;
+			inset: auto;
+			margin-top: 1rem;
 			grid-template-columns: 1fr;
 			gap: 0.3rem;
 			padding-top: 0.7rem;

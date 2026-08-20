@@ -43,6 +43,8 @@ const {
 						class="post-item"
 						href={`/blog/${post.id}/`}
 						data-post-item
+						data-umami-event="post-click"
+						data-umami-event-post={post.id}
 						data-title={post.data.title}
 						data-description={post.data.description}
 						data-category={post.data.category}
