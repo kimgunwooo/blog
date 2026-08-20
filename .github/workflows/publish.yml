@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing SemVer tag to recover, for example v0.12.0
+        required: true
 
 permissions:
   contents: write
@@ -21,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.release_tag) || github.ref }}
           fetch-depth: 0
 
       - name: Validate release tag and ops log
@@ -30,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          tag="${GITHUB_REF_NAME}"
+          tag="${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}"
           if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Expected a semantic version tag like v0.12.0, got: $tag" >&2
             exit 1
@@ -41,7 +46,9 @@ jobs:
             exit 1
           fi
 
+          commit_sha="$(git rev-list -n 1 "$tag")"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "commit_sha=$commit_sha" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -77,7 +84,7 @@ jobs:
           else
             gh release create "$RELEASE_TAG" \
               --repo "$GITHUB_REPOSITORY" \
-              --target "$GITHUB_SHA" \
+              --target "${{ steps.release.outputs.commit_sha }}" \
               --title "$RELEASE_TAG" \
               --generate-notes
           fi
