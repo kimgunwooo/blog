@@ -523,6 +523,28 @@ const {
 				border-radius: 6px;
 				padding: 0.08rem 0.28rem;
 			}
+			:global(html[data-theme='light']) .prose :global(.mermaid .messageText),
+			:global(html[data-theme='light']) .prose :global(.mermaid .labelText),
+			:global(html[data-theme='light']) .prose :global(.mermaid .loopText),
+			:global(html[data-theme='light']) .prose :global(.mermaid .sequenceNumber),
+			:global(html[data-theme='light']) .prose :global(.mermaid .edgeLabel text),
+			:global(html[data-theme='light']) .prose :global(.mermaid .edgeLabel p) {
+				color: #1f2937 !important;
+				fill: #1f2937 !important;
+			}
+			:global(html[data-theme='dark']) .prose :global(.mermaid .messageText),
+			:global(html[data-theme='dark']) .prose :global(.mermaid .labelText),
+			:global(html[data-theme='dark']) .prose :global(.mermaid .loopText),
+			:global(html[data-theme='dark']) .prose :global(.mermaid .sequenceNumber),
+			:global(html[data-theme='dark']) .prose :global(.mermaid .edgeLabel text),
+			:global(html[data-theme='dark']) .prose :global(.mermaid .edgeLabel p) {
+				color: #e2e8f0 !important;
+				fill: #e2e8f0 !important;
+			}
+			.prose :global(.mermaid .noteText) {
+				color: #1f2937 !important;
+				fill: #1f2937 !important;
+			}
 			.prose :global(.mermaid .label),
 			.prose :global(.mermaid .nodeLabel) {
 				line-height: 1.35;
@@ -1279,6 +1301,10 @@ const {
 				const { default: mermaid } = await import(
 					'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs'
 				);
+				const isDarkTheme = document.documentElement.dataset.theme === 'dark';
+				const mermaidTextColor = isDarkTheme ? '#e2e8f0' : '#1f2937';
+				const mermaidNodeTextColor = '#111827';
+				const mermaidNoteTextColor = '#1f2937';
 				mermaid.initialize({
 					startOnLoad: false,
 					theme: 'base',
@@ -1303,12 +1329,19 @@ const {
 						tertiaryBorderColor: '#d8e1ec',
 						clusterBkg: '#f8fafc',
 						clusterBorder: '#d8e1ec',
-						lineColor: '#64748b',
-						defaultLinkColor: '#64748b',
-						edgeLabelBackground: '#ffffff',
-						textColor: '#1f2937',
-						titleColor: '#111827',
-						nodeTextColor: '#111827',
+						lineColor: isDarkTheme ? '#94a3b8' : '#475569',
+						defaultLinkColor: isDarkTheme ? '#94a3b8' : '#475569',
+						signalColor: isDarkTheme ? '#94a3b8' : '#475569',
+						actorLineColor: isDarkTheme ? '#79b5ed' : '#174a7c',
+						edgeLabelBackground: isDarkTheme ? '#1a202a' : '#ffffff',
+						textColor: mermaidTextColor,
+						titleColor: isDarkTheme ? '#f1f5f9' : '#111827',
+						nodeTextColor: mermaidNodeTextColor,
+						signalTextColor: mermaidTextColor,
+						labelTextColor: mermaidTextColor,
+						loopTextColor: mermaidTextColor,
+						noteTextColor: mermaidNoteTextColor,
+						sequenceNumberColor: mermaidTextColor,
 						fontSize: '15px',
 						fontFamily:
 							'-apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif',
@@ -1333,6 +1366,56 @@ const {
 				await mermaid.run({
 					nodes: document.querySelectorAll('.mermaid'),
 				});
+
+				const syncMermaidTextColors = () => {
+					const textColor =
+						document.documentElement.dataset.theme === 'dark' ? '#e2e8f0' : '#1f2937';
+					document
+						.querySelectorAll(
+							'.mermaid .messageText, .mermaid .labelText, .mermaid .loopText, .mermaid .sequenceNumber, .mermaid .edgeLabel text, .mermaid .edgeLabel p',
+						)
+						.forEach((element) => {
+							if (!(element instanceof SVGElement) && !(element instanceof HTMLElement)) return;
+							element.style.setProperty('fill', textColor, 'important');
+							element.style.setProperty('color', textColor, 'important');
+						});
+					document.querySelectorAll('.mermaid .noteText').forEach((element) => {
+						if (!(element instanceof SVGElement) && !(element instanceof HTMLElement)) return;
+						element.style.setProperty('fill', mermaidNoteTextColor, 'important');
+						element.style.setProperty('color', mermaidNoteTextColor, 'important');
+					});
+					document
+						.querySelectorAll('.mermaid .nodeLabel, .mermaid .nodeLabel *')
+						.forEach((element) => {
+							if (!(element instanceof SVGElement) && !(element instanceof HTMLElement)) return;
+							element.style.setProperty('fill', mermaidNodeTextColor, 'important');
+							element.style.setProperty('color', mermaidNodeTextColor, 'important');
+						});
+					const signalColor =
+						document.documentElement.dataset.theme === 'dark' ? '#94a3b8' : '#475569';
+					const actorLineColor =
+						document.documentElement.dataset.theme === 'dark' ? '#79b5ed' : '#174a7c';
+					document
+						.querySelectorAll('.mermaid .messageLine0, .mermaid .messageLine1, .mermaid .loopLine')
+						.forEach((element) => {
+							if (!(element instanceof SVGElement)) return;
+							element.style.setProperty('stroke', signalColor, 'important');
+						});
+					document.querySelectorAll('.mermaid .actor-line').forEach((element) => {
+						if (!(element instanceof SVGElement)) return;
+						element.style.setProperty('stroke', actorLineColor, 'important');
+					});
+					document.querySelectorAll('.mermaid marker path').forEach((element) => {
+						if (!(element instanceof SVGElement)) return;
+						element.style.setProperty('fill', signalColor, 'important');
+						element.style.setProperty('stroke', signalColor, 'important');
+					});
+				};
+				new MutationObserver(syncMermaidTextColors).observe(document.documentElement, {
+					attributes: true,
+					attributeFilter: ['data-theme'],
+				});
+				syncMermaidTextColors();
 
 				// Keep compact diagrams within the article width. Only preserve the native
 				// width of genuinely wide diagrams so their labels remain readable.
