@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: platform-ops-log
+  name: blog
   labels:
-    app.kubernetes.io/name: platform-ops-log
-    app.kubernetes.io/part-of: platform-ops-log
+    app.kubernetes.io/name: blog
+    app.kubernetes.io/part-of: blog
