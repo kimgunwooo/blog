@@ -20,8 +20,8 @@ env:
   IMAGE_NAME: ghcr.io/kimgunwooo/blog
 
 jobs:
-  content:
-    name: Build, publish, and promote content
+  validate:
+    name: Validate content
     runs-on: ubuntu-latest
 
     steps:
@@ -70,6 +70,27 @@ jobs:
       - name: Render Kubernetes manifests
         run: kubectl kustomize deploy/k8s >/dev/null
 
+      - name: Write validation summary
+        run: |
+          {
+            echo "## 콘텐츠 배포 · Validate"
+            echo ""
+            echo "- Source commit: [\`${GITHUB_SHA:0:7}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA})"
+            echo "- Scope: blog content and blog images only"
+            echo "- Result: site build and Kustomize render passed"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build:
+    name: Build and push content image
+    needs: validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Set image tag
         id: image
         shell: bash
@@ -107,10 +128,34 @@ jobs:
             exit 1
           fi
 
+      - name: Write image summary
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          {
+            echo "## 콘텐츠 배포 · Build"
+            echo ""
+            echo "- Source commit: [\`${GITHUB_SHA:0:7}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA})"
+            echo "- Image: \`${IMAGE_NAME}:${IMAGE_TAG}\`"
+            echo "- Result: multi-architecture image pushed to GHCR"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  promote:
+    name: Promote content image to Argo CD
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      CONTENT_TAG: sha-${{ github.sha }}
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
       - name: Update Argo CD image tag
         shell: bash
-        env:
-          CONTENT_TAG: ${{ steps.image.outputs.tag }}
         run: |
           python3 - <<'PY'
           import os
@@ -139,8 +184,20 @@ jobs:
           git add deploy/k8s/kustomization.yaml
           if git diff --cached --quiet; then
             echo "No manifest update needed."
-            exit 0
+          else
+            git commit -m "chore(content): promote blog to ${CONTENT_TAG} [deploy:content] [skip ci]"
+            git push origin HEAD:main
           fi
 
-          git commit -m "chore(content): promote blog to ${{ steps.image.outputs.tag }} [deploy:content] [skip ci]"
-          git push origin HEAD:main
+      - name: Write promotion summary
+        run: |
+          promotion_sha="$(git rev-parse HEAD)"
+          {
+            echo "## 콘텐츠 배포 · Promote"
+            echo ""
+            echo "- Source commit: [\`${GITHUB_SHA:0:7}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA})"
+            echo "- Image: \`${IMAGE_NAME}:${CONTENT_TAG}\`"
+            echo "- Promotion commit: [\`${promotion_sha:0:7}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${promotion_sha})"
+            echo "- Argo CD Application: \`blog\`"
+            echo "- Next: Argo CD detects \`deploy/k8s\` and syncs the desired state"
+          } >> "$GITHUB_STEP_SUMMARY"

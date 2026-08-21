@@ -27,9 +27,12 @@ env:
   IMAGE_NAME: ghcr.io/kimgunwooo/blog
 
 jobs:
-  release:
-    name: Build, release, and promote
+  validate:
+    name: Validate release
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      commit_sha: ${{ steps.release.outputs.commit_sha }}
 
     steps:
       - name: Checkout
@@ -59,6 +62,49 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "commit_sha=$commit_sha" >> "$GITHUB_OUTPUT"
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        run: npm run build
+
+      - name: Render Kubernetes manifests
+        run: kubectl kustomize deploy/k8s >/dev/null
+
+      - name: Write validation summary
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_COMMIT_SHA: ${{ steps.release.outputs.commit_sha }}
+        run: |
+          {
+            echo "## Release 배포 · Validate"
+            echo ""
+            echo "- Release tag: [\`${RELEASE_TAG}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${RELEASE_TAG})"
+            echo "- Source commit: [\`${RELEASE_COMMIT_SHA:0:7}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${RELEASE_COMMIT_SHA})"
+            echo "- Result: ops log, site build, and Kustomize render passed"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build:
+    name: Build image and create Release
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ needs.validate.outputs.tag }}
+      RELEASE_COMMIT_SHA: ${{ needs.validate.outputs.commit_sha }}
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.validate.outputs.tag }}
+          fetch-depth: 0
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -78,13 +124,12 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ steps.release.outputs.tag }}
+          tags: ${{ env.IMAGE_NAME }}:${{ env.RELEASE_TAG }}
 
       - name: Create GitHub Release
-        if: ${{ inputs.skip_release != true }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_release != true }}
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
@@ -94,11 +139,31 @@ jobs:
           else
             gh release create "$RELEASE_TAG" \
               --repo "$GITHUB_REPOSITORY" \
-              --target "${{ steps.release.outputs.commit_sha }}" \
+              --target "$RELEASE_COMMIT_SHA" \
               --title "$RELEASE_TAG" \
               --generate-notes
           fi
 
+      - name: Write image and Release summary
+        run: |
+          {
+            echo "## Release 배포 · Build"
+            echo ""
+            echo "- Release tag: [\`${RELEASE_TAG}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${RELEASE_TAG})"
+            echo "- Source commit: [\`${RELEASE_COMMIT_SHA:0:7}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${RELEASE_COMMIT_SHA})"
+            echo "- Image: \`${IMAGE_NAME}:${RELEASE_TAG}\`"
+            echo "- Result: multi-architecture image pushed to GHCR"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  promote:
+    name: Promote release image to Argo CD
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ needs.validate.outputs.tag }}
+      RELEASE_COMMIT_SHA: ${{ needs.validate.outputs.commit_sha }}
+
+    steps:
       - name: Checkout main for manifest promotion
         uses: actions/checkout@v4
         with:
@@ -124,21 +189,33 @@ jobs:
           else:
               path.write_text(updated)
           PY
-        env:
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
 
       - name: Commit Argo CD manifest update
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add deploy/k8s/kustomization.yaml
           if git diff --cached --quiet; then
             echo "No manifest update needed."
-            exit 0
+          else
+            git commit -m "chore(release): promote blog to ${RELEASE_TAG} [deploy:release] [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
 
-          git commit -m "chore(release): promote blog to ${{ steps.release.outputs.tag }} [deploy:release] [skip ci]"
-          git pull --rebase origin main
-          git push origin HEAD:main
+      - name: Write promotion summary
+        run: |
+          promotion_sha="$(git rev-parse HEAD)"
+          {
+            echo "## Release 배포 · Promote"
+            echo ""
+            echo "- Release tag: [\`${RELEASE_TAG}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${RELEASE_TAG})"
+            echo "- Source commit: [\`${RELEASE_COMMIT_SHA:0:7}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${RELEASE_COMMIT_SHA})"
+            echo "- Image: \`${IMAGE_NAME}:${RELEASE_TAG}\`"
+            echo "- Promotion commit: [\`${promotion_sha:0:7}\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${promotion_sha})"
+            echo "- Argo CD Application: \`blog\`"
+            echo "- Next: Argo CD detects \`deploy/k8s\` and syncs the desired state"
+          } >> "$GITHUB_STEP_SUMMARY"
