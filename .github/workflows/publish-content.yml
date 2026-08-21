@@ -1,0 +1,146 @@
+name: Publish content image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/content/blog/**"
+      - "public/images/blog/**"
+
+concurrency:
+  group: blog-production-promotion
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/kimgunwooo/blog
+
+jobs:
+  content:
+    name: Build, publish, and promote content
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Confirm content-only change
+        shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          changed_files="$(git diff --name-only "$BEFORE_SHA" "$GITHUB_SHA")"
+          if [[ -z "$changed_files" ]]; then
+            echo "No changed files found."
+            exit 1
+          fi
+
+          while IFS= read -r file; do
+            case "$file" in
+              src/content/blog/*|public/images/blog/*)
+                ;;
+              *)
+                echo "Non-content file changed: $file" >&2
+                echo "Use the SemVer Release lane for application or infrastructure changes." >&2
+                exit 1
+                ;;
+            esac
+          done <<< "$changed_files"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        run: npm run build
+
+      - name: Render Kubernetes manifests
+        run: kubectl kustomize deploy/k8s >/dev/null
+
+      - name: Set image tag
+        id: image
+        shell: bash
+        run: echo "tag=sha-${GITHUB_SHA:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ steps.image.outputs.tag }}
+
+      - name: Confirm main did not advance during build
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          current_main="$(git rev-parse origin/main)"
+          if [[ "$current_main" != "$GITHUB_SHA" ]]; then
+            echo "main advanced during the content build: expected $GITHUB_SHA, got $current_main" >&2
+            exit 1
+          fi
+
+      - name: Update Argo CD image tag
+        shell: bash
+        env:
+          CONTENT_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          path = Path("deploy/k8s/kustomization.yaml")
+          image_tag = os.environ["CONTENT_TAG"]
+          text = path.read_text()
+          updated = re.sub(r"newTag: .+", f"newTag: {image_tag}", text, count=1)
+          if updated == text:
+              if not re.search(r"newTag: .+", text):
+                  raise SystemExit("newTag was not found")
+              print(f"newTag is already {image_tag}")
+          else:
+              path.write_text(updated)
+          PY
+
+      - name: Commit Argo CD manifest update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add deploy/k8s/kustomization.yaml
+          if git diff --cached --quiet; then
+            echo "No manifest update needed."
+            exit 0
+          fi
+
+          git commit -m "chore(content): promote blog to ${{ steps.image.outputs.tag }} [deploy:content] [skip ci]"
+          git push origin HEAD:main

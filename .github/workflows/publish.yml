@@ -15,6 +15,10 @@ on:
         default: false
         type: boolean
 
+concurrency:
+  group: blog-production-promotion
+  cancel-in-progress: false
+
 permissions:
   contents: write
   packages: write
@@ -135,6 +139,6 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: promote blog to ${{ steps.release.outputs.tag }} [skip ci]"
+          git commit -m "chore(release): promote blog to ${{ steps.release.outputs.tag }} [deploy:release] [skip ci]"
           git pull --rebase origin main
           git push origin HEAD:main
