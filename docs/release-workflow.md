@@ -51,6 +51,19 @@ GitHub Release 생성 단계는 저장소 Actions secret `RELEASE_TOKEN`을 사�
 
 Release workflow는 `release: published` 이벤트를 사용하지 않는다. tag push 하나만 입력으로 사용하므로, workflow가 Release를 자동 생성해도 중복 이미지 빌드가 발생하지 않는다.
 
+## 수동 복구
+
+`workflow_dispatch`는 별도 복구 workflow가 아니라 `Publish release image`를 사람이 다시 시작하는 입력이다. 기존 tag를 지정하면 그 tag commit을 checkout하고 이미지 build/push, Release 확인, `newTag` promotion을 다시 수행한다.
+
+```bash
+gh workflow run "Publish release image" \
+  -R kimgunwooo/blog \
+  -f release_tag=v0.12.0 \
+  -f skip_release=true
+```
+
+`skip_release: true`는 이미 만들어진 GitHub Release 생성을 건너뛸 뿐, 이미지 build/push까지 건너뛰지는 않는다. Release가 이미 존재하는지 확인하고, manifest의 `newTag`가 이미 같으면 promotion commit도 만들지 않는다. 따라서 제어 흐름은 반복 실행에 안전하지만, 같은 mutable image tag를 다시 push할 수 있다는 점은 별도 주의가 필요하다.
+
 ## main push와 배포 lane의 차이
 
 | 방식 | 동작 | 운영 배포 |
