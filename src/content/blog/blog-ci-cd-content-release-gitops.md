@@ -7,6 +7,8 @@ createdAt: '2026-08-21T17:40:00+09:00'
 tags: ['ci-cd', 'github-actions', 'gitops', 'argocd', 'kubernetes', 'kustomize', 'ghcr', 'release-management', 'observability']
 ---
 
+![배포 파이프라인을 다시 고민하는 모습](/images/blog/blog-ci-cd-content-release-gitops/thinking-about-pipeline.png)
+
 처음에는 블로그의 배포를 단순하게 생각했다.
 
 ```text
