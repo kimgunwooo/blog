@@ -14,6 +14,19 @@ GitHub Release는 단순한 Git tag가 아니라, 운영기록·컨테이너 ima
 
 현재 최신 기준점은 `v0.12.0`이다. `v0.9`, `v0.10`, `v0.11`은 세 자리 SemVer로 전환하기 전의 역사적 운영기록이다.
 
+## 배포 lane
+
+모든 변경을 Release로 만들지 않는다.
+
+| 변경 | workflow | 이미지 tag | GitHub Release | 운영기록 |
+| --- | --- | --- | --- | --- |
+| `src/content/blog/**`, `public/images/blog/**`만 변경 | `Publish content image` | `sha-<commit>` | 만들지 않음 | 추가하지 않음 |
+| 레이아웃·기능·인프라·CI 변경 | `Publish release image` | `vX.Y.Z` | 생성 | 추가 |
+
+콘텐츠 workflow는 허용된 콘텐츠 경로 외의 파일이 같은 push에 포함되면 실패한다. 혼합 변경은 Release lane으로 분리하거나 PR을 나눈다.
+
+두 workflow는 `blog-production-promotion` concurrency group을 공유한다. 둘 중 하나가 `newTag`를 promotion하는 동안 다른 workflow는 기다린다.
+
 ## Release 발행 순서
 
 1. 코드와 글을 수정한다.
@@ -38,15 +51,16 @@ GitHub Release 생성 단계는 저장소 Actions secret `RELEASE_TOKEN`을 사�
 
 Release workflow는 `release: published` 이벤트를 사용하지 않는다. tag push 하나만 입력으로 사용하므로, workflow가 Release를 자동 생성해도 중복 이미지 빌드가 발생하지 않는다.
 
-## main push와 Release의 차이
+## main push와 배포 lane의 차이
 
 | 방식 | 동작 | 운영 배포 |
 | --- | --- | --- |
 | PR | 사이트 빌드·manifest 렌더링 검증 | 하지 않음 |
-| `main` push | 사이트 빌드·manifest 렌더링 검증 | 하지 않음 |
+| 콘텐츠 경로의 `main` push | 사이트 빌드·manifest 렌더링·SHA image·manifest promotion | Argo CD가 수행 |
+| 그 외 `main` push | 사이트 빌드·manifest 렌더링 검증 | 하지 않음 |
 | `vX.Y.Z` tag push | Release·GHCR image·manifest promotion 실행 | Argo CD가 수행 |
 
-이렇게 하면 일반 커밋마다 이미지가 만들어지거나 배포되지 않는다. 배포 기준은 사람이 확인한 버전 tag로 한정되고, 코드·운영기록·image·desired state가 같은 버전을 가리킨다.
+이렇게 하면 글 수정은 Release 버전을 오염시키지 않으면서 바로 배포할 수 있다. 애플리케이션 기능과 인프라 변경은 여전히 사람이 확인한 SemVer tag를 통해 배포한다.
 
 ## Rollback
 

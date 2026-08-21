@@ -25,9 +25,25 @@ curl -fsS http://127.0.0.1:4321/
 kubectl kustomize deploy/k8s
 ```
 
-## 이미지 tag
+## 배포 lane
 
-GitHub Actions는 `vX.Y.Z` tag push에서만 운영 이미지를 만든다. 예를 들어 `v0.12.0` tag를 push하면 다음 이미지가 생성된다.
+배포는 콘텐츠 배포와 Release 배포로 나뉜다.
+
+### 콘텐츠 배포
+
+`src/content/blog/**` 또는 `public/images/blog/**`만 변경한 `main` push는 `Publish content image` workflow를 실행한다. 이 workflow는 다음 SHA 기반 이미지를 만든다.
+
+```text
+ghcr.io/kimgunwooo/blog:sha-79d3b8a
+```
+
+GitHub Release와 `ops-log.astro` 버전 기록은 만들지 않는다. 대신 `newTag`를 SHA tag로 바꾸는 promotion commit을 만들고 Argo CD가 sync한다.
+
+콘텐츠 workflow는 허용 경로 외의 파일이 함께 바뀌면 실패한다. 레이아웃·컴포넌트·Kubernetes·CI 변경은 SemVer Release lane으로 보내야 한다.
+
+### Release 배포
+
+GitHub Actions는 `vX.Y.Z` tag push에서 Release 이미지를 만든다. 예를 들어 `v0.12.0` tag를 push하면 다음 이미지가 생성된다.
 
 ```text
 ghcr.io/kimgunwooo/blog:v0.12.0
@@ -44,6 +60,8 @@ images:
 ```
 
 Kustomize는 이 값을 사용해 Deployment의 `image` tag를 최종 manifest에 반영한다. Argo CD는 `home-ops` Application의 source revision을 기준으로 이 manifest를 읽고 sync한다.
+
+두 workflow는 같은 `blog-production-promotion` concurrency group을 사용한다. 콘텐츠 promotion과 Release promotion이 동시에 `newTag`를 수정하지 않도록 한 번에 하나만 실행한다.
 
 ## Argo CD 확인
 

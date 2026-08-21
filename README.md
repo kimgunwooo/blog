@@ -60,22 +60,36 @@ Dockerfile              정적 사이트 runtime image
 
 ## 배포 흐름
 
-`main` push는 운영 배포가 아니라 검증만 수행합니다. 실제 운영 배포는 `vX.Y.Z` SemVer tag를 push할 때 시작됩니다.
+PR과 `main` push는 항상 검증을 수행합니다. 운영 배포는 변경 성격에 따라 콘텐츠 배포와 Release 배포로 나뉩니다.
 
-1. PR 또는 `main` push에서 Astro 정적 사이트와 Kubernetes manifest를 검증합니다.
-2. 배포할 변경과 같은 커밋에 `src/pages/ops-log.astro`의 버전 기록을 추가합니다.
-3. 준비된 커밋에 `v0.12.0` 같은 annotated tag를 만들고 push합니다.
-4. GitHub Actions가 tag와 운영기록 버전을 확인한 뒤 `linux/amd64`, `linux/arm64` 이미지를 같은 tag로 GHCR에 push합니다.
-5. workflow가 같은 tag의 GitHub Release를 자동으로 만듭니다.
-6. workflow가 `deploy/k8s/kustomization.yaml`의 `newTag`를 Release tag로 바꾸고 `main`에 promotion commit을 남깁니다.
-7. Argo CD가 `home-ops`에서 관리하는 Application을 통해 desired state를 읽고 `blog` namespace에 sync합니다.
-8. 배포 성공·실패·health 상태를 Discord로 알립니다.
+### 콘텐츠 배포
 
-따라서 코드 커밋, GitHub Release, GHCR image, Kubernetes desired state가 모두 같은 버전 문자열을 가리킵니다.
+`src/content/blog/**` 또는 `public/images/blog/**`만 변경한 경우입니다.
+
+1. PR에서 Astro 정적 사이트와 Kubernetes manifest를 검증합니다.
+2. `main` merge 후 `Publish content image` workflow가 SHA 기반 이미지를 만듭니다.
+3. `ghcr.io/kimgunwooo/blog:sha-<commit>`을 GHCR에 push합니다.
+4. `deploy/k8s/kustomization.yaml`의 `newTag`를 해당 SHA tag로 바꿉니다.
+5. Argo CD가 `home-ops`에서 관리하는 Application을 통해 `blog` namespace에 sync합니다.
+
+콘텐츠 배포는 GitHub Release나 운영기록 버전을 만들지 않습니다.
+
+### Release 배포
+
+레이아웃·기능·인프라·CI 변경입니다.
+
+1. 배포할 변경과 같은 커밋에 `src/pages/ops-log.astro`의 버전 기록을 추가합니다.
+2. 준비된 커밋에 `v0.13.0` 같은 annotated tag를 만들고 push합니다.
+3. GitHub Actions가 tag와 운영기록 버전을 확인한 뒤 multi-platform image를 같은 tag로 GHCR에 push합니다.
+4. workflow가 같은 tag의 GitHub Release를 자동으로 만듭니다.
+5. workflow가 `newTag`를 Release tag로 바꾸고 `main`에 promotion commit을 남깁니다.
+6. Argo CD가 변경을 sync합니다.
+
+Release와 콘텐츠 배포 모두 Argo CD 결과를 Discord로 알립니다. 알림에는 `콘텐츠 배포` 또는 `Release 배포`가 표시됩니다.
 
 ## Release와 운영 기록
 
-운영 기록과 GitHub Release는 같은 SemVer 버전 문자열을 사용합니다.
+운영 기록과 GitHub Release는 Release 배포에서만 같은 SemVer 버전 문자열을 사용합니다.
 
 ```text
 운영기록 v0.12.0  <->  GitHub Release v0.12.0  <->  GHCR image :v0.12.0
@@ -87,7 +101,7 @@ Dockerfile              정적 사이트 runtime image
 - minor: `v0.12.0` → `v0.13.0` — 기존 호환성을 유지하는 기능 추가
 - major: `v0.12.0` → `v1.0.0` — 호환성을 깨는 구조 변경 또는 안정화 기준점
 
-예를 들어 다음처럼 tag를 push하면 나머지는 workflow가 진행합니다.
+Release 배포는 다음처럼 tag를 push하면 나머지는 workflow가 진행합니다.
 
 ```sh
 git tag -a v0.12.0 -m "v0.12.0"
