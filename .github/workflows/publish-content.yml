@@ -84,6 +84,8 @@ jobs:
     name: Build and push content image
     needs: validate
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.image.outputs.tag }}
 
     steps:
       - name: Checkout
@@ -145,7 +147,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-      CONTENT_TAG: sha-${{ github.sha }}
+      CONTENT_TAG: ${{ needs.build.outputs.image_tag }}
 
     steps:
       - name: Checkout main
