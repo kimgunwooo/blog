@@ -5,7 +5,6 @@ import { BLOG_CATEGORIES, PROFILE_LINKS } from '../consts';
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.createdAt.valueOf() - a.data.createdAt.valueOf(),
 );
-const recentPosts = posts.slice(0, 4);
 const counts = new Map<string, number>();
 for (const post of posts) {
 	counts.set(post.data.category, (counts.get(post.data.category) ?? 0) + 1);
@@ -55,17 +54,6 @@ const currentPath = Astro.url.pathname;
 		</nav>
 	</section>
 
-	<section class="recent">
-		<p class="section-title">Recent</p>
-		{
-			recentPosts.map((post) => (
-				<a href={`/blog/${post.id}/`}>
-					<span>{post.data.category}</span>
-					<strong>{post.data.title}</strong>
-				</a>
-			))
-		}
-	</section>
 </aside>
 
 <style>
@@ -207,29 +195,6 @@ const currentPath = Astro.url.pathname;
 		color: rgb(var(--muted));
 		font-size: 0.78rem;
 	}
-	.recent {
-		display: grid;
-		gap: 0.65rem;
-	}
-	.recent a {
-		display: grid;
-		gap: 0.15rem;
-		color: inherit;
-		text-decoration: none;
-	}
-	.recent span {
-		color: rgb(var(--muted));
-		font-size: 0.74rem;
-		font-weight: 800;
-		text-transform: uppercase;
-	}
-	.recent strong {
-		font-size: 0.88rem;
-		line-height: 1.45;
-	}
-	.recent a:hover strong {
-		color: var(--accent);
-	}
 	@media (max-width: 900px) {
 		.global-sidebar {
 			position: static;
@@ -274,9 +239,6 @@ const currentPath = Astro.url.pathname;
 		}
 		.profile .icon-links {
 			margin-top: 0;
-		}
-		.recent {
-			display: none;
 		}
 	}
 </style>
